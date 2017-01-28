@@ -1,0 +1,26 @@
+MEMORY
+{
+    RAM : ORIGIN = 0x10000, LENGTH = 0x1000000
+    PIC_BUFF : ORIGIN = 0x10000 + LENGTH(RAM), LENGTH = 200M
+}
+
+SECTIONS
+{
+    .text : {*(.text)} > RAM
+    .data : {*(.data)} > PIC_BUFF
+    .bss : {*(.bss*)} > RAM
+    .pic : {
+    	pic_start = .;
+    	screen_buffer = .;
+    	*(.pic*)
+    	screen_buffer_end = pic_start + 20M;
+    	buff1 = .;
+    	. += 20M;
+    	buff2 = .;
+    	. += 20M;
+    	pic_end = .;
+    } > PIC_BUFF
+}
+
+ASSERT( LENGTH(RAM) + LENGTH(PIC_BUFF) <= 1024M, "RAM Overflow")
+ASSERT( LENGTH(PIC_BUFF) >= (pic_end - pic_start), "PIC_BUFF memory overflowed !")
