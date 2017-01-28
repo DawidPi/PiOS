@@ -1,6 +1,7 @@
 //
-// Created by Dawid on 28.01.2017.
+// Created by dawid on 28.01.17.
 //
+
 #include "gtest/gtest.h"
 
 int main(int argc, char **argv)
