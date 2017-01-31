@@ -1,7 +1,6 @@
 include(../CMake/settings.cmake)
 include(../CMake/gtest_utils.cmake)
 
-add_subdirectory(PiOS)
 
 if(PiOS_PLATFORM_TYPE STREQUAL "ARM")
     add_subdirectory(ARM)
@@ -13,3 +12,5 @@ elseif(PiOS_PLATFORM_TYPE STREQUAL "ALL")
 else()
     message(WARNING "No platform selected")
 endif()
+
+add_subdirectory(PiOS)
