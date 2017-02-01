@@ -6,7 +6,7 @@ set(SOURCES
         PiOS.hpp
         PiOS.cpp
         Scheduler.hpp
-        ThreadPool.hpp
+        # ThreadPool.hpp
         Thread.hpp)
 
 add_library(${PROJECT_NAME} STATIC ${SOURCES})

@@ -10,19 +10,21 @@
 namespace PiOS{
     class Thread{
     public:
-        using ThreadTask=std::function<void()>;
+        using ThreadTask=void (*)(void);
         using ContextPtr=void*;
 
         Thread()=delete;
         Thread(const Thread&)=delete;
-        Thread(ThreadTask& task) : mTask(task){}
-        Thread(ThreadTask&& task) : mTask(task){}
 
-        ContextPtr& context(){return mContext;}
-        const ContextPtr& context()const {return mContext;}
+        Thread(ThreadTask task) noexcept : mTask(task), mContext(nullptr) {}
+
+        ContextPtr &context() noexcept { return mContext; }
+
+        const ContextPtr &context() const noexcept { return mContext; }
+
+        ThreadTask task() const noexcept { return mTask; }
 
         virtual ~Thread(){};
-
     private:
         ContextPtr mContext;
         ThreadTask mTask;

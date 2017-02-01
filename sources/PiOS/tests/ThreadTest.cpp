@@ -10,34 +10,28 @@
 class ThreadTest : public ::testing::Test
 {
 public:
-    class TestFunctor{
-    public:
-        void operator()(){
+    static void testMain() {
 
-        }
-    };
+    }
 
     class TestContext{};
 };
 
 
-
-TEST_F(ThreadTest, basic_test)
+TEST_F(ThreadTest, members_test)
 {
-    TestFunctor testFunctor;
-    PiOS::Thread testThread(testFunctor);
+    PiOS::Thread testThread(testMain);
 
-    testThread.context() = nullptr;
+    ASSERT_EQ(testThread.task(), testMain);
     ASSERT_EQ(testThread.context(), nullptr);
 
-    PiOS::Thread anotherTestThread(std::move(testFunctor));
-    anotherTestThread.context() = nullptr;
-    ASSERT_EQ(testThread.context(), nullptr);
+    using ContextType=PiOS::Thread::ContextPtr;
 
-    bool fakeBoolean;
+    TestContext sampleConcreteContext;
+    ContextType testContext = reinterpret_cast<ContextType>(&sampleConcreteContext);
+    testThread.context() = testContext;
+    ASSERT_EQ(testThread.context(), testContext);
 
-    anotherTestThread.context() = &fakeBoolean;
-    testThread.context() = anotherTestThread.context();
-
-    ASSERT_EQ(testThread.context(), anotherTestThread.context());
+    //check if Context is copied and not taken by reference
+    ASSERT_NE(&testThread.context(), &testContext);
 }
