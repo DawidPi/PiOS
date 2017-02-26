@@ -3,17 +3,23 @@
 //
 
 #include "SimpleBuddy.hpp"
-
+#include <utility>
 
 namespace PiOS {
 
-    SimpleBuddy::SimpleBuddy(size_t spaceSize, void *spacePtr, unsigned int minRank)
-            : mOverallSpaceSize(spaceSize),
-              mSpacePtr(spacePtr),
-              mMinRank(minRank) {}
+
+    SimpleBuddy::SimpleBuddy(FixedSizeBinaryTree<size_t> &&binaryTree, size_t spaceSize, void *spacePtr,
+                             unsigned int minBlockSizeExponent) :
+            mBinaryTree(std::forward<FixedSizeBinaryTree<size_t>>(binaryTree)),
+            mSpaceSize(spaceSize),
+            mSpacePtr(spacePtr),
+            mMinBlockSizeExponent(minBlockSizeExponent) {
+        mBinaryTree.initializeAllElements(static_cast<size_t>(MemoryBlockStatus::FULLY_ALLOCATED));
+        mBinaryTree.setValue(mBinaryTree.root(), spaceSize);
+    }
 
     MemorySpace SimpleBuddy::allocate(size_t size) {
-        auto rank = findRankOfSize(size);
+        NodeId bestNode = findOptimalNode(size);
 
     }
 
@@ -21,31 +27,37 @@ namespace PiOS {
 
     }
 
-
     SimpleBuddy::~SimpleBuddy() {
-        deallocateAll();
+
     }
 
-    void SimpleBuddy::deallocateAll() {
+    NodeId SimpleBuddy::findOptimalNode(size_t memoryToAllocate) {
+        auto optimalRank = calculateOptimalRank(memoryToAllocate);
+        auto currentNode = mBinaryTree.root();
+
+        static_assert(false, "not imeplemented");
+
+
+        return NodeId(0, 0);
     }
 
-    unsigned int SimpleBuddy::findRankOfSize(size_t size) {
-        unsigned int foundRank = mMinRank;
+    NodeId::RankType SimpleBuddy::calculateOptimalRank(size_t memorySize) {
+        NodeId::RankType foundRank = 0;
+        size_t currentMemorySize = nodeValue(mBinaryTree.root());
+        auto invalidRank = std::numeric_limits<NodeId::RankType>::max();
+        if (currentMemorySize < memorySize) {
+            return invalidRank;
+        }
 
-        while (size >= sizeOfMemoryBlock(foundRank))
-            foundRank *= 2;
+        while (currentMemorySize >= 2 * memorySize) {
+            currentMemorySize /= 2;
+            foundRank++;
+        }
 
         return foundRank;
     }
 
-    size_t SimpleBuddy::sizeOfMemoryBlock(unsigned int rank) {
-        size_t memorySpace = 1;
-
-        for (size_t i = 0; i < rank; rank++) {
-            memorySpace *= 2;
-        }
-
-        return memorySpace;
+    size_t SimpleBuddy::nodeValue(NodeId id) {
+        return mBinaryTree.value(id);
     }
-
 }

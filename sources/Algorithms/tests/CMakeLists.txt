@@ -1,9 +1,8 @@
 project(Algorithms_tests)
 
 set(CMAKE_CXX_STANDARD 14)
-set(SOURCES gtest_main.cpp)
 
-set(SOURCES Buddy_test.cpp)
+set(SOURCES Buddy_test.cpp gtest_main.cpp FixedSizeBinaryTree_test.cpp)
 
 enable_gtest("${SOURCES}" ${PROJECT_NAME})
 

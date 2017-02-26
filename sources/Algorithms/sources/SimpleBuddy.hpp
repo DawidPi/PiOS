@@ -6,6 +6,8 @@
 #define PROJECT_SIMPLEBUDDY_HPP
 
 #include "Buddy.hpp"
+#include "FixedSizeBinaryTree.hpp"
+#include <limits>
 
 namespace PiOS {
 
@@ -16,12 +18,14 @@ namespace PiOS {
     class SimpleBuddy : public Buddy {
     public:
         /*!
-         * \brief Constructor. Takes information about managed space.
-         * @param spaceSize size of the managed space.
-         * @param spacePtr pointer to the beginning of managed space.
-         * @param minRank minimum size of the page calculated as: pow(2,minRank)
+         * \brief Constructor. Takes information about managed space and binary tree implementation
+         * @param binaryTree Binary tree, that encapsulates binary tree logic
+         * @param spaceSize Size of the managed space.
+         * @param spacePtr Pointer to the beginning of managed space.
+         * @param minBlockSizeExponent Minimum size of the page calculated as: pow(2,minBlockSizeExponent)
          */
-        SimpleBuddy(size_t spaceSize, void *spacePtr, unsigned int minRank);
+        SimpleBuddy(FixedSizeBinaryTree<size_t> &&binaryTree, size_t spaceSize, void *spacePtr,
+                    unsigned int minBlockSizeExponent);
 
         /*!
          * \brief Allocates chunk of memory.
@@ -42,22 +46,21 @@ namespace PiOS {
         virtual ~SimpleBuddy();
 
     private:
-        size_t mOverallSpaceSize;
+        FixedSizeBinaryTree<size_t> mBinaryTree;
+        size_t mSpaceSize;
         void *mSpacePtr;
-        unsigned int mMinRank;
+        unsigned int mMinBlockSizeExponent;
 
-        void deallocateAll();
-
-        unsigned int findRankOfSize(size_t size);
-
-        size_t sizeOfMemoryBlock(unsigned int rank);
-
-        struct MemoryBlockMeta {
-            MemoryBlockMeta *parent;
-            MemoryBlockMeta *rightChild;
-            MemoryBlockMeta *leftChild;
-
+        enum class MemoryBlockStatus : size_t {
+            NOT_CREATED = std::numeric_limits<size_t>::max(),
+            FULLY_ALLOCATED = 0
         };
+
+        NodeId findOptimalNode(size_t memoryToAllocate);
+
+        NodeId::RankType calculateOptimalRank(size_t allocate);
+
+        size_t nodeValue(NodeId id);
     };
 
 }

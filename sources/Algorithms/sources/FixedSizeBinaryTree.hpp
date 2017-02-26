@@ -7,6 +7,7 @@
 
 #include <array>
 #include <cstdlib>
+#include <limits>
 #include "power.hpp"
 
 namespace PiOS {
@@ -15,14 +16,14 @@ namespace PiOS {
      * \brief Representation of location of the node of binary tree, to use with binary tree API.
      */
     class NodeId {
-        using rankType = unsigned int;
     public:
+        using RankType = unsigned int;
         /*!
          * \brief Creates NodeId with given node rank and rank index in the binary tree
          * @param rank Rank(depth) of Node in the binary tree
          * @param rowIndex Index of the Node in the current rank(depth)
          */
-        NodeId(unsigned int rank, unsigned int rowIndex) : mRank(rank), mRankIndex(rowIndex) {};
+        NodeId(unsigned int rank, unsigned int rowIndex) : mRank(rank), mIndexInRank(rowIndex) {};
 
         /*!
          * \brief Creates NodeId with given absolute index of the node in the array.
@@ -31,16 +32,25 @@ namespace PiOS {
         NodeId(size_t absoluteIndex) : mAbsoluteIndex(absoluteIndex) {};
 
         /*!
+         *
+         * @param rhs
+         * @return
+         */
+        bool operator==(const NodeId &rhs) const {
+            return absoluteIndex() == rhs.absoluteIndex();
+        }
+
+        /*!
          * \brief Allows to get rank(depth) of the node in the binary tree.
          * @return Rank(depth) of the node in binary tree.
          */
-        rankType rank() const;
+        RankType rank() const;
 
         /*!
          * \brief Allows to get index of the node in it's rank in binary tree.
          * @return Index of the Node in it's current rank in binary tree.
          */
-        rankType rankIndex() const;
+        RankType indexInRank() const;
 
         /*!
          * \brief Allows to get absolute index of the node in the array, that @Ref FixedSizeBinaryTree uses
@@ -54,9 +64,15 @@ namespace PiOS {
          */
         bool isValid() const;
 
+        /*!
+         * Creates invalid Node, which does not represent a proper entry in binaryTree
+         * @return invalid Node.
+         */
+        static NodeId invalidNode();
+
     private:
-        mutable rankType mRank = std::numeric_limits<rankType>::max();
-        mutable rankType mRankIndex = std::numeric_limits<rankType>::max();
+        mutable RankType mRank = std::numeric_limits<RankType>::max();
+        mutable RankType mIndexInRank = std::numeric_limits<RankType>::max();
         mutable size_t mAbsoluteIndex = std::numeric_limits<size_t>::max();
 
         void updateRank() const;
@@ -71,18 +87,24 @@ namespace PiOS {
      * @tparam T type of elements stored in the binary tree
      * @tparam depth depth of binary tree
      */
-    template<typename T, unsigned int depth>
+    template<typename T>
     class FixedSizeBinaryTree {
     public:
         /*!
          * \brief Creates binary tree initializing all the nodes with it's default value.
-         * @param defaultValue initial value of all nodes in binary tree.
+         * @param managedSpace Pointer to the continous memory block, that is to be managed
+         * @param elementsInSpace Length of memory block pointed by @ref managedSpace
+         * @param defaultValue Initial value of all nodes in binary tree.
          */
-        FixedSizeBinaryTree(const T &defaultValue = T());
+        FixedSizeBinaryTree(T *managedSpace, size_t elementsInSpace, const T &defaultValue = T());
 
         FixedSizeBinaryTree(const FixedSizeBinaryTree &) = delete;
 
-        FixedSizeBinaryTree(FixedSizeBinaryTree &&) = delete;
+        /*!
+         * \brief Move constructor. transfers all knowledge from rhs to this object.
+         * @param rhs FixedSizeBinaryTree to be moved
+         */
+        FixedSizeBinaryTree(FixedSizeBinaryTree &&rhs);
 
         /*!
          * \brief Allows for an access to the value of the Node
@@ -122,14 +144,36 @@ namespace PiOS {
          */
         NodeId leftChild(NodeId node) const;
 
+        /*!
+         * Allows to get proxy to the root of the binary tree.
+         * @return Root of the binary tree.
+         */
+        NodeId root() const;
+
+        /*!
+         * changes values of all nodes to the value of @ref newValue
+         * @param newValue value to which all nodes' values will be changed
+         */
+        void initializeAllElements(const T &newValue);
+
+        using Depth = unsigned int;
+
+        Depth depth() { return mDepth; }
+
+        ~FixedSizeBinaryTree();
     private:
-        std::array<T, pow(2, depth - 1)> mContainer;
+        Depth mDepth;
+        T *const mManagedSpace;
+        size_t mElementsInSpace;
 
-        NodeId invalidNode() const;
-
+        bool isNodeValid(NodeId node) const;
         size_t calculateRankOffset(unsigned int rank) const;
+
+        NodeId::RankType calculateDepth(size_t size);
     };
 
 }
+
+#include "FixedSizeBinaryTreeImpl.hpp"
 
 #endif //PROJECT_FIXEDSIZEBINARYTREE_HPP
