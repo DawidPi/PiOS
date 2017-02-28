@@ -24,21 +24,23 @@ namespace PiOS {
          * @param spacePtr Pointer to the beginning of managed space.
          * @param minBlockSizeExponent Minimum size of the page calculated as: pow(2,minBlockSizeExponent)
          */
-        SimpleBuddy(FixedSizeBinaryTree<size_t> &&binaryTree, size_t spaceSize, void *spacePtr,
-                    unsigned int minBlockSizeExponent);
+        explicit SimpleBuddy(FixedSizeBinaryTree<size_t> &&binaryTree, size_t spaceSize, void *spacePtr,
+                             unsigned int minBlockSizeExponent);
+
+        SimpleBuddy() = delete;
 
         /*!
          * \brief Allocates chunk of memory.
-         * @param size minimal size of space to allocate.
+         * @param sizeToAllocate minimal size of space to allocate.
          * @return Information about allocated space (it's location and size).
          */
-        virtual MemorySpace allocate(size_t size);
+        MemorySpace allocate(size_t sizeToAllocate) override;
 
         /*!
          * \brief deallocates space, that was allocated previously.
          * @param spaceBegin beginning of the space, that is to be deallocated.
          */
-        virtual void deallocate(void *spaceBegin);
+        void deallocate(void *spaceBegin) override;
 
         /*!
          * \brief Destructor. Deallocates all allocated memory.
@@ -56,11 +58,32 @@ namespace PiOS {
             FULLY_ALLOCATED = 0
         };
 
-        NodeId findOptimalNode(size_t memoryToAllocate);
+        enum class TreePath {
+            LEFT,
+            RIGHT,
+            LEFT_WITH_UPDATE,
+            RIGHT_WITH_UPDATE,
+            NONE
+        };
 
         NodeId::RankType calculateOptimalRank(size_t allocate);
 
         size_t nodeValue(NodeId id);
+
+        MemorySpace
+        calculateMemoryPage(size_t sizeToAllocate, const NodeId &currentMemoryNode) const;
+
+        size_t fitSizeToPage(size_t size);
+
+        NodeId nextNode(NodeId node, size_t sizeToAllocate);
+
+        size_t calculateMaxFreeSpaceForNode(NodeId rightChild) const;
+
+        TreePath calculateOptimalPath(size_t leftSpace, size_t rightSpace, size_t allocationSpace);
+
+        size_t rankToSize(NodeId::RankType rank) const;
+
+        void *memoryNodeToPage(const NodeId &node) const;
     };
 
 }

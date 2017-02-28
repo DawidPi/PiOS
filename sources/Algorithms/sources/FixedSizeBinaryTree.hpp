@@ -23,18 +23,18 @@ namespace PiOS {
          * @param rank Rank(depth) of Node in the binary tree
          * @param rowIndex Index of the Node in the current rank(depth)
          */
-        NodeId(unsigned int rank, unsigned int rowIndex) : mRank(rank), mIndexInRank(rowIndex) {};
+        explicit NodeId(unsigned int rank, unsigned int rowIndex) : mRank(rank), mIndexInRank(rowIndex) {};
 
         /*!
          * \brief Creates NodeId with given absolute index of the node in the array.
          * @param absoluteIndex Abosulte index of node in the array.
          */
-        NodeId(size_t absoluteIndex) : mAbsoluteIndex(absoluteIndex) {};
+        explicit NodeId(size_t absoluteIndex) : mAbsoluteIndex(absoluteIndex) {};
 
         /*!
-         *
-         * @param rhs
-         * @return
+         * \brief Comparison operator.
+         * @param rhs Right hand side of the comparison.
+         * @return true if both nodes represent the same value.
          */
         bool operator==(const NodeId &rhs) const {
             return absoluteIndex() == rhs.absoluteIndex();
@@ -96,15 +96,15 @@ namespace PiOS {
          * @param elementsInSpace Length of memory block pointed by @ref managedSpace
          * @param defaultValue Initial value of all nodes in binary tree.
          */
-        FixedSizeBinaryTree(T *managedSpace, size_t elementsInSpace, const T &defaultValue = T());
+        explicit FixedSizeBinaryTree(T *managedSpace, size_t elementsInSpace, const T &defaultValue = T());
 
-        FixedSizeBinaryTree(const FixedSizeBinaryTree &) = delete;
+        explicit FixedSizeBinaryTree(const FixedSizeBinaryTree &) = delete;
 
         /*!
          * \brief Move constructor. transfers all knowledge from rhs to this object.
          * @param rhs FixedSizeBinaryTree to be moved
          */
-        FixedSizeBinaryTree(FixedSizeBinaryTree &&rhs);
+        explicit FixedSizeBinaryTree(FixedSizeBinaryTree &&rhs);
 
         /*!
          * \brief Allows for an access to the value of the Node
@@ -158,7 +158,7 @@ namespace PiOS {
 
         using Depth = unsigned int;
 
-        Depth depth() { return mDepth; }
+        Depth depth() const { return mDepth; }
 
         ~FixedSizeBinaryTree();
     private:
