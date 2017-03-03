@@ -6,6 +6,8 @@ if(PiOS_BUILD_TESTS)
     downloadGtest()
 endif()
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Weffc++ -pedantic")
+
 if(PiOS_PLATFORM_TYPE STREQUAL "ARM")
 #    add_subdirectory(ARM)
 elseif(PiOS_PLATFORM_TYPE STREQUAL "PC")
