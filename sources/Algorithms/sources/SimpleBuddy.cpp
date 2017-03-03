@@ -165,9 +165,9 @@ namespace PiOS {
             return TreePath::LEFT;
         } else if (leftSpace < allocationSpace and rightSpace < allocationSpace) {
             return TreePath::NONE;
-        } else {
-            assert(false);
         }
+
+        return static_cast<SimpleBuddy::TreePath>(std::numeric_limits<SimpleBuddy::TreePath>::max());
     }
 
     size_t SimpleBuddy::rankToSize(NodeId::RankType rank) const {

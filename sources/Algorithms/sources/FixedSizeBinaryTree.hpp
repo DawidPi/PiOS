@@ -98,7 +98,8 @@ namespace PiOS {
          */
         explicit FixedSizeBinaryTree(T *managedSpace, size_t elementsInSpace, const T &defaultValue = T());
 
-        explicit FixedSizeBinaryTree(const FixedSizeBinaryTree &) = delete;
+        FixedSizeBinaryTree(const FixedSizeBinaryTree<T> &) = delete;
+        FixedSizeBinaryTree& operator=(const FixedSizeBinaryTree<T> &) = delete;
 
         /*!
          * \brief Move constructor. transfers all knowledge from rhs to this object.

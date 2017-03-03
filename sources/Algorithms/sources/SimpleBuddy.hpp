@@ -28,6 +28,8 @@ namespace PiOS {
                              unsigned int minBlockSizeExponent);
 
         SimpleBuddy() = delete;
+        SimpleBuddy(const SimpleBuddy& rhs) = delete;
+        SimpleBuddy& operator=(const SimpleBuddy& rhs) = delete;
 
         /*!
          * \brief Allocates chunk of memory.
@@ -58,7 +60,7 @@ namespace PiOS {
             FULLY_ALLOCATED = 0
         };
 
-        enum class TreePath {
+        enum class TreePath : unsigned int {
             LEFT,
             RIGHT,
             LEFT_WITH_UPDATE,

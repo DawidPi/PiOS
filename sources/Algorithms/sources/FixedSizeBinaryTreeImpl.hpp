@@ -9,9 +9,9 @@ namespace PiOS {
 
     template<typename T>
     FixedSizeBinaryTree<T>::FixedSizeBinaryTree(T *managedSpace, size_t elementsInSpace, const T &defaultValue) :
+            mDepth(calculateDepth(elementsInSpace)),
             mManagedSpace(managedSpace),
-            mElementsInSpace(elementsInSpace),
-            mDepth(calculateDepth(elementsInSpace)) {
+            mElementsInSpace(elementsInSpace) {
         assert(elementsInSpace > 0);
 
         initializeAllElements(defaultValue);
@@ -24,7 +24,7 @@ namespace PiOS {
             new(mManagedSpace + currentElement) T(newValue);
             currentElement++;
         }
-    };
+    }
 
     template<typename T>
     FixedSizeBinaryTree<T>::~FixedSizeBinaryTree() {
@@ -71,7 +71,7 @@ namespace PiOS {
         }
 
         return NodeId::invalidNode();
-    };
+    }
 
     template<typename T>
     NodeId FixedSizeBinaryTree<T>::leftChild(NodeId node) const {

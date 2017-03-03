@@ -17,7 +17,7 @@ public:
         ASSERT_EQ(node.absoluteIndex(), absoluteIdx);
     }
 
-    PiOS::NodeId findRightMostNode(PiOS::NodeId node, PiOS::FixedSizeBinaryTree<unsigned long> &tree) {
+    PiOS::NodeId findRightMostNode(PiOS::NodeId node, PiOS::FixedSizeBinaryTree<size_t> &tree) {
         using namespace PiOS;
 
         while (tree.rightChild(node).isValid()) {
