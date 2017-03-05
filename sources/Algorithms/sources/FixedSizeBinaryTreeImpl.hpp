@@ -122,7 +122,7 @@ namespace PiOS {
 
     template<typename T>
     FixedSizeBinaryTree<T>::FixedSizeBinaryTree(FixedSizeBinaryTree <T> &&rhs) :
-            mElementsInSpace(rhs.mElementsInSpace),
             mDepth(rhs.mDepth),
-            mManagedSpace(rhs.mManagedSpace) {}
+            mManagedSpace(rhs.mManagedSpace),
+            mElementsInSpace(rhs.mElementsInSpace) {}
 }

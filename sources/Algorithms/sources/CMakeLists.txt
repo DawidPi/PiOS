@@ -9,6 +9,9 @@ set(SOURCES
         SimpleBuddy.hpp
         FixedSizeBinaryTreeImpl.hpp
         FixedSizeBinaryTree.hpp
-        power.hpp FixedSizeBinaryTree.cpp)
+        power.hpp
+        FixedSizeBinaryTree.cpp
+        SimpleBuddyFactory.cpp
+        SimpleBuddyFactory.hpp)
 
 add_library(${PROJECT_NAME} ${SOURCES})

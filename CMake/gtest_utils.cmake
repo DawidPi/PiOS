@@ -16,11 +16,13 @@ FUNCTION(downloadGtest)
     ExternalProject_add(googletest
             GIT_REPOSITORY https://github.com/google/googletest.git
             GIT_TAG master
+            INSTALL_COMMAND ""
 
             SOURCE_DIR "${CMAKE_BINARY_DIR}/3rdParty/gtest-src"
             BINARY_DIR "${CMAKE_BINARY_DIR}/3rdParty/gtest-build"
 
             LOG_DOWNLOAD ON
+            LOG_BUILD ON
             )
 
     add_library(gtest UNKNOWN IMPORTED)

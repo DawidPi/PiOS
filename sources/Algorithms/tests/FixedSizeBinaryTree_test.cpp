@@ -42,7 +42,8 @@ TEST_F(FixedSizeBinaryTreeTest, NodeId_calculations) {
     node = NodeId(maxValue, maxValue);
     ASSERT_FALSE(node.isValid());
 
-    node = NodeId(maxValue);
+    auto maxValueIdx = std::numeric_limits<size_t>::max();
+    node = NodeId(maxValueIdx);
     ASSERT_FALSE(node.isValid());
 
     node = NodeId(3, 1);
@@ -56,8 +57,8 @@ TEST_F(FixedSizeBinaryTreeTest, constructorTest) {
     using namespace PiOS;
 
     using Element = size_t;
-    const size_t elementsToManage = pow(2, 5) - 1;
-    Element *managedSpace = static_cast<Element *>(malloc(sizeof(Element) * elementsToManage));
+    const size_t elementsToManage = PiOS::pow(2, 5) - 1;
+    Element *managedSpace = new Element[elementsToManage];
 
     FixedSizeBinaryTree<Element> testTree(managedSpace, elementsToManage, 0);
     auto node = testTree.root();
@@ -88,8 +89,8 @@ TEST_F(FixedSizeBinaryTreeTest, treeWalkingTest) {
     ASSERT_FALSE(rootOnlyTree.rightChild(rootNode).isValid());
     ASSERT_FALSE(rootOnlyTree.leftChild(rootNode).isValid());
 
-    const size_t elementsToManage = pow(2, 5) - 1;
-    Element *managedSpace = static_cast<Element *>(malloc(sizeof(Element) * elementsToManage));
+    const size_t elementsToManage = PiOS::pow(2, 5) - 1;
+    Element *managedSpace = new Element[elementsToManage];
 
     FixedSizeBinaryTree<Element> tree(managedSpace, elementsToManage, 0);
     auto root = tree.root();
@@ -111,8 +112,8 @@ TEST_F(FixedSizeBinaryTreeTest, settingValues) {
     using namespace PiOS;
     using Element = size_t;
 
-    const size_t elementsToManage = pow(2, 5) - 1;
-    Element *managedSpace = static_cast<Element *>(malloc(sizeof(Element) * elementsToManage));
+    const size_t elementsToManage = PiOS::pow(2, 5) - 1;
+    Element *managedSpace = new Element[elementsToManage];
 
     FixedSizeBinaryTree<Element> tree(managedSpace, elementsToManage, 0);
     auto root = tree.root();

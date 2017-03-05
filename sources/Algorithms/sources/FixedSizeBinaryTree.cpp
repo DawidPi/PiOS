@@ -7,18 +7,16 @@
 namespace PiOS {
 
     bool NodeId::isValid() const {
-        unsigned int maxUnsignedInt = std::numeric_limits<unsigned int>::max();
-        return (mRank < maxUnsignedInt and mIndexInRank < maxUnsignedInt) or (mAbsoluteIndex < maxUnsignedInt);
+        auto invalidValueRank = std::numeric_limits<decltype(mRank)>::max();
+        auto invalidValueIdx = std::numeric_limits<decltype(mAbsoluteIndex)>::max();
+        return mRank < invalidValueRank and mIndexInRank < invalidValueRank and mAbsoluteIndex < invalidValueIdx;
     }
 
     NodeId::RankType NodeId::rank() const {
-        if (mRank == std::numeric_limits<RankType>::max())
-            updateRank();
-
         return mRank;
     }
 
-    void NodeId::updateRank() const {
+    void NodeId::updateRank() {
         size_t currentRankSize = 1;
         RankType currentRank = 0;
         size_t currentElement = 0;
@@ -43,20 +41,14 @@ namespace PiOS {
     }
 
     NodeId::RankType NodeId::indexInRank() const {
-        if (mIndexInRank == std::numeric_limits<RankType>::max())
-            updateRank();
-
         return mIndexInRank;
     }
 
     size_t NodeId::absoluteIndex() const {
-        if (mAbsoluteIndex == std::numeric_limits<size_t>::max())
-            updateAbsoluteIdx();
-
         return mAbsoluteIndex;
     }
 
-    void NodeId::updateAbsoluteIdx() const {
+    void NodeId::updateAbsoluteIdx() {
         size_t rankOffset = calculateRankOffset();
         mAbsoluteIndex = rankOffset + mIndexInRank;
     }

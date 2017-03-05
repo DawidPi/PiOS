@@ -1,4 +1,3 @@
-#todo: make order not important
 include(../CMake/settings.cmake)
 include(../CMake/gtest_utils.cmake)
 

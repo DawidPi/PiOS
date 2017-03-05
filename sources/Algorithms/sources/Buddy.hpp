@@ -62,7 +62,7 @@ namespace PiOS {
         /*!
          * \brief Destructor. Deallocates all allocated memory.
          */
-        virtual ~Buddy() = 0;
+        virtual ~Buddy() {};
     };
 
 }

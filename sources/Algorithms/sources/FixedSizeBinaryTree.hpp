@@ -23,13 +23,24 @@ namespace PiOS {
          * @param rank Rank(depth) of Node in the binary tree
          * @param rowIndex Index of the Node in the current rank(depth)
          */
-        explicit NodeId(unsigned int rank, unsigned int rowIndex) : mRank(rank), mIndexInRank(rowIndex) {};
+        explicit NodeId(unsigned int rank, unsigned int rowIndex) : mRank(rank), mIndexInRank(rowIndex) {
+            auto invalidValue = std::numeric_limits<decltype(rank)>::max();
+            if (rank == invalidValue or rowIndex == invalidValue)
+                return;
+
+            updateAbsoluteIdx();
+        };
 
         /*!
          * \brief Creates NodeId with given absolute index of the node in the array.
          * @param absoluteIndex Abosulte index of node in the array.
          */
-        explicit NodeId(size_t absoluteIndex) : mAbsoluteIndex(absoluteIndex) {};
+        explicit NodeId(size_t absoluteIndex) : mAbsoluteIndex(absoluteIndex) {
+            auto invalidValue = std::numeric_limits<decltype(absoluteIndex)>::max();
+            if (absoluteIndex == invalidValue)
+                return;
+            updateRank();
+        };
 
         /*!
          * \brief Comparison operator.
@@ -71,14 +82,13 @@ namespace PiOS {
         static NodeId invalidNode();
 
     private:
-        mutable RankType mRank = std::numeric_limits<RankType>::max();
-        mutable RankType mIndexInRank = std::numeric_limits<RankType>::max();
-        mutable size_t mAbsoluteIndex = std::numeric_limits<size_t>::max();
+        RankType mRank = std::numeric_limits<RankType>::max();
+        RankType mIndexInRank = std::numeric_limits<RankType>::max();
+        size_t mAbsoluteIndex = std::numeric_limits<size_t>::max();
 
-        void updateRank() const;
+        void updateRank();
 
-        void updateAbsoluteIdx() const;
-
+        void updateAbsoluteIdx();
         size_t calculateRankOffset() const;
     };
 
