@@ -88,6 +88,10 @@ namespace PiOS {
         size_t rankToSize(NodeId::RankType rank) const;
 
         void *memoryNodeToPage(const NodeId &node) const;
+
+        size_t minPageSize() const;
+
+        size_t mSmallestPage;
     };
 
 }

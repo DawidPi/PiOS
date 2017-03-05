@@ -66,7 +66,7 @@ namespace PiOS {
         if (mDepth == 0)
             return NodeId::invalidNode();
 
-        if (node.rank() < mDepth - 1) {
+        if (node.rank() + 1 < mDepth) {
             return NodeId(node.rank() + 1, node.indexInRank() * 2 + 1);
         }
 

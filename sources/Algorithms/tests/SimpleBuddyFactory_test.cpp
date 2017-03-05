@@ -24,5 +24,5 @@ TEST_F(SimpleBuddyFactoryTest, SimpleBuddy) {
 
     auto allocatedSpace = myBuddy.allocate(1);
     ASSERT_EQ(allocatedSpace.begin(), managedMemory);
-    //ASSERT_EQ(allocatedSpace.end(), )
+    ASSERT_EQ(allocatedSpace.end(), managedMemory + 32);
 }

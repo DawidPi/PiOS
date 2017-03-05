@@ -92,6 +92,7 @@ TEST_F(FixedSizeBinaryTreeTest, treeWalkingTest) {
     const size_t elementsToManage = PiOS::pow(2, 5) - 1;
     Element *managedSpace = new Element[elementsToManage];
 
+    //todo: test depth and max Transitions of the tree
     FixedSizeBinaryTree<Element> tree(managedSpace, elementsToManage, 0);
     auto root = tree.root();
     testNode(root, true, 0, 0, 0);

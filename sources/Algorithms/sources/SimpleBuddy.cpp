@@ -4,6 +4,7 @@
 
 #include "SimpleBuddy.hpp"
 #include <utility>
+#include <iostream>
 
 namespace PiOS {
 
@@ -13,9 +14,11 @@ namespace PiOS {
             mBinaryTree(std::forward<FixedSizeBinaryTree<size_t>>(binaryTree)),
             mSpaceSize(spaceSize),
             mSpacePtr(spacePtr),
-            mMinBlockSizeExponent(minBlockSizeExponent) {
-        mBinaryTree.initializeAllElements(static_cast<size_t>(MemoryBlockStatus::FULLY_ALLOCATED));
+            mMinBlockSizeExponent(minBlockSizeExponent),
+            mSmallestPage(rankToSize(binaryTree.depth() - 1)) {
+        mBinaryTree.initializeAllElements(static_cast<size_t>(MemoryBlockStatus::NOT_CREATED));
         mBinaryTree.setValue(mBinaryTree.root(), spaceSize);
+        assert(rankToSize(mBinaryTree.depth()) > 0);
     }
 
     SimpleBuddy::SimpleBuddy(SimpleBuddy &&rhs) :
@@ -23,27 +26,25 @@ namespace PiOS {
     }
 
     MemorySpace SimpleBuddy::allocate(size_t sizeToAllocate) {
-        NodeId currentMemoryNode = mBinaryTree.root();
+        auto currentMemoryNode = mBinaryTree.root();
         size_t currentFreeMemory = mBinaryTree.value(currentMemoryNode);
-        NodeId::RankType rank = 0;
 
         if (sizeToAllocate > currentFreeMemory)
             return MemorySpace(nullptr, nullptr);
 
         auto pageSize = fitSizeToPage(sizeToAllocate);
 
-        while (rank < mBinaryTree.depth()) {
-            rank++;
-
+        for (NodeId::RankType rank = 0; rank < mBinaryTree.maxTransitions() - 1; rank++) {
             NodeId newNode = nextNode(currentMemoryNode, pageSize);
 
             if (newNode == currentMemoryNode) {
                 break;
             }
+            currentMemoryNode = newNode;
         }
 
-        mBinaryTree.setValue(currentMemoryNode, static_cast<size_t>(MemoryBlockStatus::FULLY_ALLOCATED));
         MemorySpace memorySpace = calculateMemoryPage(sizeToAllocate, currentMemoryNode);
+        mBinaryTree.setValue(currentMemoryNode, static_cast<size_t>(MemoryBlockStatus::FULLY_ALLOCATED));
 
         return memorySpace;
     }
@@ -90,9 +91,9 @@ namespace PiOS {
     }
 
     size_t SimpleBuddy::fitSizeToPage(size_t size) {
-        size_t currentPageSize = 1;
+        size_t currentPageSize = minPageSize();
 
-        while (size < currentPageSize) {
+        while (currentPageSize < size) {
             currentPageSize *= 2;
         }
 
@@ -183,6 +184,10 @@ namespace PiOS {
     void *SimpleBuddy::memoryNodeToPage(const NodeId &node) const {
         size_t rankOffsets = rankToSize(node.rank());
         return reinterpret_cast<void *>(reinterpret_cast<size_t>(mSpacePtr) + node.indexInRank() * rankOffsets);
+    }
+
+    size_t SimpleBuddy::minPageSize() const {
+        return mSmallestPage;
     }
 
 }

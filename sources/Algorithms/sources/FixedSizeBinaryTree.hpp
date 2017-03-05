@@ -169,7 +169,17 @@ namespace PiOS {
 
         using Depth = unsigned int;
 
+        /*!
+         * \brief Returns depth of the tree counting from 1.
+         * @return Depth of the tree.
+         */
         Depth depth() const { return mDepth; }
+
+        /*!
+         * \brief Helper method, when trying to iterate over transitions not ranks
+         * @return Max number of transitions counting from root.
+         */
+        Depth maxTransitions() const { return depth() - 1; }
 
         ~FixedSizeBinaryTree();
     private:
