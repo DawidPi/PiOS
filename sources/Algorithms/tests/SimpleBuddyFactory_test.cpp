@@ -15,15 +15,16 @@ public:
 
 TEST_F(SimpleBuddyFactoryTest, SimpleBuddy) {
     SimpleBuddyFactory factory;
-    size_t binaryTreeElements = PiOS::pow(2, 4);
+    size_t memorySize = 1024; // 1024 bytes of memory
+    size_t binaryTreeElements = PiOS::pow(2, 4) - 1; //tree has depth of 4
+    const int expectedPageSize = 128; // 1024/(2^(4-1)) = 128
     size_t *memoryForBinaryTree = new size_t[binaryTreeElements];
 
-    size_t memorySize = 1024;
     void *managedMemory = operator new(memorySize);
     SimpleBuddy myBuddy{factory.create(memoryForBinaryTree, binaryTreeElements, managedMemory, memorySize)};
 
 
     auto allocatedSpace = myBuddy.allocate(1);
     ASSERT_EQ(allocatedSpace.begin(), managedMemory);
-    ASSERT_EQ(allocatedSpace.end(), static_cast<char*>(managedMemory) + 32);
+    ASSERT_EQ(allocatedSpace.end(), static_cast<char*>(managedMemory) + expectedPageSize);
 }

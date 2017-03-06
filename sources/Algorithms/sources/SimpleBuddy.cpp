@@ -3,7 +3,6 @@
 //
 
 #include "SimpleBuddy.hpp"
-#include <utility>
 #include <iostream>
 
 namespace PiOS {
@@ -15,10 +14,10 @@ namespace PiOS {
             mSpaceSize(spaceSize),
             mSpacePtr(spacePtr),
             mMinBlockSizeExponent(minBlockSizeExponent),
-            mSmallestPage(rankToSize(binaryTree.depth())) {
+            mSmallestPage(rankToSize(mBinaryTree.maxTransitions())) {
         mBinaryTree.initializeAllElements(static_cast<size_t>(MemoryBlockStatus::NOT_CREATED));
         mBinaryTree.setValue(mBinaryTree.root(), spaceSize);
-        assert(rankToSize(mBinaryTree.depth()) > 0);
+        assert(minPageSize() > 0);
     }
 
     SimpleBuddy::SimpleBuddy(SimpleBuddy &&rhs) :
@@ -27,20 +26,20 @@ namespace PiOS {
 
     MemorySpace SimpleBuddy::allocate(size_t sizeToAllocate) {
         auto currentMemoryNode = mBinaryTree.root();
-        size_t currentFreeMemory = mBinaryTree.value(currentMemoryNode);
+        size_t currentTotalFreeMemory = mBinaryTree.value(currentMemoryNode);
 
-        if (sizeToAllocate > currentFreeMemory)
+        if (sizeToAllocate > currentTotalFreeMemory)
             return MemorySpace(nullptr, nullptr);
 
         auto pageSize = fitSizeToPage(sizeToAllocate);
 
-        for (NodeId::RankType rank = 0; rank < mBinaryTree.maxTransitions() - 1; rank++) {
-            NodeId newNode = nextNode(currentMemoryNode, pageSize);
+        for (NodeId::RankType rank = 0; rank < mBinaryTree.maxTransitions(); rank++) {
+            NodeId next = nextNode(currentMemoryNode, pageSize);
 
-            if (newNode == currentMemoryNode) {
+            if (next == currentMemoryNode) {
                 break;
             }
-            currentMemoryNode = newNode;
+            currentMemoryNode = next;
         }
 
         MemorySpace memory = calculateMemoryToAllocate(currentMemoryNode, pageSize);
@@ -80,9 +79,9 @@ namespace PiOS {
         size_t maxRightFreeSpace = calculateMaxFreeSpaceForNode(rightChild);
         size_t maxLeftFreeSpace = calculateMaxFreeSpaceForNode(leftChild);
 
-
         if(!isCreated(rightChild)){
-            assert(!isCreated(leftChild));
+            assert(!isCreated(leftChild)); // children are created and destroyed in pairs
+
             allocateChildren(rightChild, leftChild);
         }
 
@@ -96,17 +95,17 @@ namespace PiOS {
             case TreePath::RIGHT:
                 nextNode = rightChild;
                 break;
-            case TreePath::LEFT_WITH_UPDATE: {
+            case TreePath::RIGHT_WITH_UPDATE: {
                 nextNode = rightChild;
                 size_t freeMemorySpaceInRightNode = maxRightFreeSpace - sizeToAllocate;
-                size_t newNodeMemoryValue = std::min(maxLeftFreeSpace, freeMemorySpaceInRightNode);
+                size_t newNodeMemoryValue = std::max(maxLeftFreeSpace, freeMemorySpaceInRightNode);
                 mBinaryTree.setValue(node, newNodeMemoryValue);
             }
                 break;
-            case TreePath::RIGHT_WITH_UPDATE: {
+            case TreePath::LEFT_WITH_UPDATE: {
                 nextNode = leftChild;
                 size_t freeMemorySpaceInLeftNode = maxLeftFreeSpace - sizeToAllocate;
-                size_t newNodeMemoryValue = std::min(maxRightFreeSpace, freeMemorySpaceInLeftNode);
+                size_t newNodeMemoryValue = std::max(maxRightFreeSpace, freeMemorySpaceInLeftNode);
                 mBinaryTree.setValue(node, newNodeMemoryValue);
             }
                 break;
@@ -134,7 +133,7 @@ namespace PiOS {
             assert(node.rank() > 0);
             auto parent = mBinaryTree.parent(node);
             auto parentValue = mBinaryTree.value(parent);
-            maxFreeSpace = parentValue;
+            maxFreeSpace = parentValue/2;
         }
 
         return maxFreeSpace;
@@ -157,7 +156,8 @@ namespace PiOS {
             return TreePath::NONE;
         }
 
-        return static_cast<SimpleBuddy::TreePath>(std::numeric_limits<SimpleBuddy::TreePath>::max());
+        assert(false);
+        return static_cast<SimpleBuddy::TreePath>(std::numeric_limits<size_t>::max());
     }
 
     size_t SimpleBuddy::rankToSize(NodeId::RankType rank) const {
@@ -181,7 +181,7 @@ namespace PiOS {
 
     bool SimpleBuddy::isCreated(NodeId node) {
         const size_t notCreatedTag = static_cast<size_t>(MemoryBlockStatus::NOT_CREATED);
-        return mBinaryTree.value(node) == notCreatedTag;
+        return mBinaryTree.value(node) != notCreatedTag;
     }
 
 }

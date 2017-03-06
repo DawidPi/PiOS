@@ -86,16 +86,6 @@ namespace PiOS {
     }
 
     template<typename T>
-    size_t FixedSizeBinaryTree<T>::calculateRankOffset(unsigned int rank) const {
-        size_t rankOffset = 0;
-        for (unsigned int currentRank = 0; currentRank < rank; currentRank++) {
-            rankOffset += pow(2, currentRank);
-        }
-
-        return rankOffset;
-    }
-
-    template<typename T>
     NodeId FixedSizeBinaryTree<T>::root() const {
         return NodeId(0);
     }

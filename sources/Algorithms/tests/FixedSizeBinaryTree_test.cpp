@@ -61,6 +61,8 @@ TEST_F(FixedSizeBinaryTreeTest, constructorTest) {
     Element *managedSpace = new Element[elementsToManage];
 
     FixedSizeBinaryTree<Element> testTree(managedSpace, elementsToManage, 0);
+    ASSERT_EQ(testTree.depth(), 5);
+    ASSERT_EQ(testTree.maxTransitions(), testTree.depth()-1);
     auto node = testTree.root();
     testNode(node, true, 0, 0, 0);
 
@@ -92,8 +94,9 @@ TEST_F(FixedSizeBinaryTreeTest, treeWalkingTest) {
     const size_t elementsToManage = PiOS::pow(2, 5) - 1;
     Element *managedSpace = new Element[elementsToManage];
 
-    //todo: test depth and max Transitions of the tree
     FixedSizeBinaryTree<Element> tree(managedSpace, elementsToManage, 0);
+    ASSERT_EQ(tree.depth(), 5);
+    ASSERT_EQ(tree.maxTransitions(), tree.depth()-1);
     auto root = tree.root();
     testNode(root, true, 0, 0, 0);
 
@@ -117,6 +120,8 @@ TEST_F(FixedSizeBinaryTreeTest, settingValues) {
     Element *managedSpace = new Element[elementsToManage];
 
     FixedSizeBinaryTree<Element> tree(managedSpace, elementsToManage, 0);
+    ASSERT_EQ(tree.depth(), 5);
+    ASSERT_EQ(tree.maxTransitions(), tree.depth()-1);
     auto root = tree.root();
 
     auto node = root;

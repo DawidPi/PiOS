@@ -190,7 +190,7 @@ namespace PiOS {
         Depth depth() const { return mDepth; }
 
         /*!
-         * \brief Helper method, when trying to iterate over transitions not ranks
+         * \brief Helper method, when trying to iterate over transitions not ranks. Returns always depth() -1;
          * @return Max number of transitions counting from root.
          */
         Depth maxTransitions() const { return depth() - 1; }
@@ -205,7 +205,6 @@ namespace PiOS {
         size_t mElementsInSpace;
 
         bool isNodeValid(NodeId node) const;
-        size_t calculateRankOffset(unsigned int rank) const;
 
         NodeId::RankType calculateDepth(size_t size);
     };
