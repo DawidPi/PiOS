@@ -27,10 +27,27 @@ namespace PiOS {
         SimpleBuddy(FixedSizeBinaryTree<size_t> &&binaryTree, size_t spaceSize, void *spacePtr,
                     unsigned int minBlockSizeExponent);
 
+        /*!
+         * \brief Move constructor. Transfers ownership of managed resources from moved object.
+         * @param rhs Object, from which ownership is transfered
+         */
         SimpleBuddy(SimpleBuddy &&rhs);
 
+        /*!
+         * \brief deleted default constructor
+         */
         SimpleBuddy() = delete;
+
+        /*!
+         * \brief Deleted copy constructor.
+         * @param rhs
+         */
         SimpleBuddy(const SimpleBuddy& rhs) = delete;
+
+        /*!
+         * \brief Deleted assignment operator.
+         * @param rhs
+         */
         SimpleBuddy& operator=(const SimpleBuddy& rhs) = delete;
 
         /*!
@@ -70,18 +87,11 @@ namespace PiOS {
             NONE
         };
 
-        NodeId::RankType calculateOptimalRank(size_t allocate);
-
-        size_t nodeValue(NodeId id);
-
-        MemorySpace
-        calculateMemoryPage(size_t sizeToAllocate, const NodeId &currentMemoryNode) const;
-
         size_t fitSizeToPage(size_t size);
 
         NodeId nextNode(NodeId node, size_t sizeToAllocate);
 
-        size_t calculateMaxFreeSpaceForNode(NodeId rightChild) const;
+        size_t calculateMaxFreeSpaceForNode(NodeId node) const;
 
         TreePath calculateOptimalPath(size_t leftSpace, size_t rightSpace, size_t allocationSpace);
 
@@ -92,6 +102,12 @@ namespace PiOS {
         size_t minPageSize() const;
 
         size_t mSmallestPage;
+
+        bool isCreated(NodeId node);
+
+        void allocateChildren(NodeId rightChild, NodeId leftChild);
+
+        MemorySpace calculateMemoryToAllocate(const NodeId &currentMemoryNode, size_t pageSize) const;
     };
 
 }

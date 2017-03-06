@@ -22,7 +22,8 @@ TEST_F(SimpleBuddyFactoryTest, SimpleBuddy) {
     void *managedMemory = operator new(memorySize);
     SimpleBuddy myBuddy{factory.create(memoryForBinaryTree, binaryTreeElements, managedMemory, memorySize)};
 
+
     auto allocatedSpace = myBuddy.allocate(1);
     ASSERT_EQ(allocatedSpace.begin(), managedMemory);
-    ASSERT_EQ(allocatedSpace.end(), managedMemory + 32);
+    ASSERT_EQ(allocatedSpace.end(), static_cast<char*>(managedMemory) + 32);
 }

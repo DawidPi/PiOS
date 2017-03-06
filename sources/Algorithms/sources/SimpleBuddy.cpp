@@ -15,7 +15,7 @@ namespace PiOS {
             mSpaceSize(spaceSize),
             mSpacePtr(spacePtr),
             mMinBlockSizeExponent(minBlockSizeExponent),
-            mSmallestPage(rankToSize(binaryTree.depth() - 1)) {
+            mSmallestPage(rankToSize(binaryTree.depth())) {
         mBinaryTree.initializeAllElements(static_cast<size_t>(MemoryBlockStatus::NOT_CREATED));
         mBinaryTree.setValue(mBinaryTree.root(), spaceSize);
         assert(rankToSize(mBinaryTree.depth()) > 0);
@@ -43,23 +43,16 @@ namespace PiOS {
             currentMemoryNode = newNode;
         }
 
-        MemorySpace memorySpace = calculateMemoryPage(sizeToAllocate, currentMemoryNode);
+        MemorySpace memory = calculateMemoryToAllocate(currentMemoryNode, pageSize);
         mBinaryTree.setValue(currentMemoryNode, static_cast<size_t>(MemoryBlockStatus::FULLY_ALLOCATED));
 
-        return memorySpace;
+        return memory;
     }
 
-    MemorySpace SimpleBuddy::calculateMemoryPage(size_t sizeToAllocate, const NodeId &currentMemoryNode) const {
-        void *memoryBegin = nullptr;
-        void *memoryEnd = nullptr;
-        size_t currentFreeMemory = mBinaryTree.value(currentMemoryNode);
-        if (currentFreeMemory >= sizeToAllocate) {
-            memoryBegin = memoryNodeToPage(currentMemoryNode);
-            memoryEnd = reinterpret_cast<void *>(reinterpret_cast<size_t>(memoryBegin) + currentFreeMemory);
-        }
-
-        MemorySpace memorySpace(memoryBegin, memoryEnd);
-        return memorySpace;
+    MemorySpace SimpleBuddy::calculateMemoryToAllocate(const NodeId &currentMemoryNode, size_t pageSize) const {
+        void* begin = memoryNodeToPage(currentMemoryNode);
+        void* end = static_cast<char*>(begin) + pageSize;
+        return MemorySpace(begin, end);
     }
 
     void SimpleBuddy::deallocate(void *) {
@@ -68,26 +61,6 @@ namespace PiOS {
 
     SimpleBuddy::~SimpleBuddy() {
 
-    }
-
-    NodeId::RankType SimpleBuddy::calculateOptimalRank(size_t memorySize) {
-        NodeId::RankType foundRank = 0;
-        size_t currentMemorySize = nodeValue(mBinaryTree.root());
-        auto invalidRank = std::numeric_limits<NodeId::RankType>::max();
-        if (currentMemorySize < memorySize) {
-            return invalidRank;
-        }
-
-        while (currentMemorySize >= 2 * memorySize) {
-            currentMemorySize /= 2;
-            foundRank++;
-        }
-
-        return foundRank;
-    }
-
-    size_t SimpleBuddy::nodeValue(NodeId id) {
-        return mBinaryTree.value(id);
     }
 
     size_t SimpleBuddy::fitSizeToPage(size_t size) {
@@ -107,8 +80,13 @@ namespace PiOS {
         size_t maxRightFreeSpace = calculateMaxFreeSpaceForNode(rightChild);
         size_t maxLeftFreeSpace = calculateMaxFreeSpaceForNode(leftChild);
 
-        TreePath path = calculateOptimalPath(maxLeftFreeSpace, maxRightFreeSpace, sizeToAllocate);
 
+        if(!isCreated(rightChild)){
+            assert(!isCreated(leftChild));
+            allocateChildren(rightChild, leftChild);
+        }
+
+        TreePath path = calculateOptimalPath(maxLeftFreeSpace, maxRightFreeSpace, sizeToAllocate);
         NodeId nextNode = node;
 
         switch (path) {
@@ -139,21 +117,32 @@ namespace PiOS {
         return nextNode;
     }
 
-    size_t SimpleBuddy::calculateMaxFreeSpaceForNode(NodeId rightChild) const {
-        const bool isRightChildAllocated =
-                mBinaryTree.value(rightChild) != static_cast<size_t>(MemoryBlockStatus::NOT_CREATED);
-        size_t maxRightFreeSpace = 0;
-        if (isRightChildAllocated) {
-            maxRightFreeSpace = mBinaryTree.value(rightChild);
+    void SimpleBuddy::allocateChildren(NodeId rightChild, NodeId leftChild){
+        const auto parentValue = mBinaryTree.value(mBinaryTree.parent(rightChild));
+        mBinaryTree.setValue(rightChild, parentValue / 2);
+        mBinaryTree.setValue(leftChild, parentValue / 2);
+    }
+
+    size_t SimpleBuddy::calculateMaxFreeSpaceForNode(NodeId node) const {
+        const bool isNodeAllocated =
+                mBinaryTree.value(node) != static_cast<size_t>(MemoryBlockStatus::NOT_CREATED);
+        size_t maxFreeSpace = 0;
+
+        if (isNodeAllocated) {
+            maxFreeSpace = mBinaryTree.value(node);
         } else {
-            maxRightFreeSpace = rankToSize(rightChild.rank());
+            assert(node.rank() > 0);
+            auto parent = mBinaryTree.parent(node);
+            auto parentValue = mBinaryTree.value(parent);
+            maxFreeSpace = parentValue;
         }
 
-        return maxRightFreeSpace;
+        return maxFreeSpace;
     }
 
     SimpleBuddy::TreePath
     SimpleBuddy::calculateOptimalPath(size_t leftSpace, size_t rightSpace, size_t allocationSpace) {
+
         if (leftSpace < rightSpace and leftSpace >= allocationSpace) {
             return TreePath::LEFT;
         } else if (rightSpace < leftSpace and rightSpace >= allocationSpace) {
@@ -188,6 +177,11 @@ namespace PiOS {
 
     size_t SimpleBuddy::minPageSize() const {
         return mSmallestPage;
+    }
+
+    bool SimpleBuddy::isCreated(NodeId node) {
+        const size_t notCreatedTag = static_cast<size_t>(MemoryBlockStatus::NOT_CREATED);
+        return mBinaryTree.value(node) == notCreatedTag;
     }
 
 }

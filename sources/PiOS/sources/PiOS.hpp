@@ -24,7 +24,6 @@ namespace PiOS {
          * PiOS constructor. For OS to be able to work it must know
          * the scheduling algorithm and threads to launch.
          * @param scheduler Scheduler algorithm to be used.
-         * @param threadPool
          */
         PiOS(Scheduler &&scheduler) : mScheduler(scheduler) {};
 

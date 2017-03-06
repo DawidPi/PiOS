@@ -17,6 +17,10 @@ namespace PiOS {
      */
     class NodeId {
     public:
+        /*!
+         *
+         * \brief New type for describing rank in BinaryTree
+         */
         using RankType = unsigned int;
         /*!
          * \brief Creates NodeId with given node rank and rank index in the binary tree
@@ -64,7 +68,7 @@ namespace PiOS {
         RankType indexInRank() const;
 
         /*!
-         * \brief Allows to get absolute index of the node in the array, that @Ref FixedSizeBinaryTree uses
+         * \brief Allows to get absolute index of the node in the array, that @ref FixedSizeBinaryTree uses
          * @return index of the Node in binary tree.
          */
         size_t absoluteIndex() const;
@@ -101,14 +105,26 @@ namespace PiOS {
     class FixedSizeBinaryTree {
     public:
         /*!
+         * \brief new type, where depth of the tree can be safely stored.
+         */
+        using Depth = unsigned int;
+
+        /*!
          * \brief Creates binary tree initializing all the nodes with it's default value.
          * @param managedSpace Pointer to the continous memory block, that is to be managed
-         * @param elementsInSpace Length of memory block pointed by @ref managedSpace
+         * @param elementsInSpace Length of memory block pointed by  managedSpace
          * @param defaultValue Initial value of all nodes in binary tree.
          */
         explicit FixedSizeBinaryTree(T *managedSpace, size_t elementsInSpace, const T &defaultValue = T());
 
+        /*!
+         * \brief Deleted copy c'tor, because 2 objects cannot manage same resource
+         */
         FixedSizeBinaryTree(const FixedSizeBinaryTree<T> &) = delete;
+
+        /*!
+         * \brief Deleted assignment operator, because 2 objects cannot manage same resource
+         */
         FixedSizeBinaryTree& operator=(const FixedSizeBinaryTree<T> &) = delete;
 
         /*!
@@ -162,12 +178,10 @@ namespace PiOS {
         NodeId root() const;
 
         /*!
-         * changes values of all nodes to the value of @ref newValue
+         * changes values of all nodes to the value of given argument
          * @param newValue value to which all nodes' values will be changed
          */
         void initializeAllElements(const T &newValue);
-
-        using Depth = unsigned int;
 
         /*!
          * \brief Returns depth of the tree counting from 1.
@@ -181,6 +195,9 @@ namespace PiOS {
          */
         Depth maxTransitions() const { return depth() - 1; }
 
+        /*!
+         * \brief destructor. Calls approriate destructors of managed elements
+         */
         ~FixedSizeBinaryTree();
     private:
         Depth mDepth;
