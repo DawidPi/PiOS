@@ -79,10 +79,18 @@ namespace PiOS {
         size_t maxRightFreeSpace = calculateMaxFreeSpaceForNode(rightChild);
         size_t maxLeftFreeSpace = calculateMaxFreeSpaceForNode(leftChild);
 
-        if(!isCreated(rightChild)){
+        auto currentValue = mBinaryTree.value(node);
+
+        if(!isCreated(rightChild) and currentValue > sizeToAllocate){
             assert(!isCreated(leftChild)); // children are created and destroyed in pairs
 
+
             allocateChildren(rightChild, leftChild);
+
+            auto parentSize = mBinaryTree.value(node);
+            mBinaryTree.setValue(node, parentSize/2);
+        } else if (!isCreated(rightChild) and currentValue == sizeToAllocate){
+            return node;
         }
 
         TreePath path = calculateOptimalPath(maxLeftFreeSpace, maxRightFreeSpace, sizeToAllocate);
@@ -172,7 +180,7 @@ namespace PiOS {
 
     void *SimpleBuddy::memoryNodeToPage(const NodeId &node) const {
         size_t rankOffsets = rankToSize(node.rank());
-        return reinterpret_cast<void *>(reinterpret_cast<size_t>(mSpacePtr) + node.indexInRank() * rankOffsets);
+        return reinterpret_cast<char*>(mSpacePtr) + node.indexInRank() * rankOffsets;
     }
 
     size_t SimpleBuddy::minPageSize() const {

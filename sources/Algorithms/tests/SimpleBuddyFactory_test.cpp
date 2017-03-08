@@ -24,7 +24,35 @@ TEST_F(SimpleBuddyFactoryTest, SimpleBuddy) {
     SimpleBuddy myBuddy{factory.create(memoryForBinaryTree, binaryTreeElements, managedMemory, memorySize)};
 
 
+    //allocate 2 smallest elements 128 bytes
     auto allocatedSpace = myBuddy.allocate(1);
     ASSERT_EQ(allocatedSpace.begin(), managedMemory);
-    ASSERT_EQ(allocatedSpace.end(), static_cast<char*>(managedMemory) + expectedPageSize);
+    auto endOfAllocatedMemory = static_cast<char*>(managedMemory) + expectedPageSize;
+    ASSERT_EQ(allocatedSpace.end(), endOfAllocatedMemory);
+
+    //second 128 byte
+    allocatedSpace = myBuddy.allocate(expectedPageSize);
+    auto beginningOfAllocatedMemory = endOfAllocatedMemory;
+    ASSERT_EQ(allocatedSpace.begin(), beginningOfAllocatedMemory);
+    endOfAllocatedMemory = beginningOfAllocatedMemory + expectedPageSize;
+    ASSERT_EQ(allocatedSpace.end(), endOfAllocatedMemory);
+
+    // 1024 - 256 bytes left allocate next 256 bytes
+    allocatedSpace = myBuddy.allocate(2*expectedPageSize);
+    beginningOfAllocatedMemory = endOfAllocatedMemory;
+    ASSERT_EQ(allocatedSpace.begin(), beginningOfAllocatedMemory);
+    endOfAllocatedMemory = beginningOfAllocatedMemory + 2*expectedPageSize;
+    ASSERT_EQ(allocatedSpace.end(), endOfAllocatedMemory);
+
+    // 512 bytes left allocate 512 bytes
+    allocatedSpace = myBuddy.allocate(4*expectedPageSize - 42);
+    beginningOfAllocatedMemory = endOfAllocatedMemory;
+    ASSERT_EQ(allocatedSpace.begin(), beginningOfAllocatedMemory);
+    endOfAllocatedMemory = beginningOfAllocatedMemory + 4*expectedPageSize;
+    ASSERT_EQ(allocatedSpace.end(), endOfAllocatedMemory);
+
+    //no more space to allocate nullptr should be returned
+    allocatedSpace = myBuddy.allocate(4*expectedPageSize - 42);
+    ASSERT_EQ(allocatedSpace.begin(), nullptr);
+    ASSERT_EQ(allocatedSpace.end(), nullptr);
 }
