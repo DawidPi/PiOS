@@ -1,34 +1,80 @@
 //
-// Created by dawid on 28.02.17.
+// Created by dawid on 02.03.17.
 //
 
 #include <gtest/gtest.h>
-#include "../sources/SimpleBuddy.hpp"
+#include <SimpleBuddyFactory.hpp>
 
 using namespace PiOS;
+using namespace std::literals;
 
 class SimpleBuddyTest : public ::testing::Test {
 public:
-    size_t diff(void *end, void *begin) {
-        return static_cast<char *>(end) - static_cast<char *>(begin);
-    }
+    const size_t binaryTreeElements = PiOS::pow(2,4)-1;
+    const size_t memorySize = 1024;
+    void* managedMemory = operator new (memorySize);
+    SimpleBuddyTest() :
+    mSimpleBuddy{SimpleBuddyFactory().create(
+            new size_t[binaryTreeElements], binaryTreeElements,
+            managedMemory, memorySize)} {}
 
+    SimpleBuddyTest(const SimpleBuddyTest& rhs) = delete;
+    SimpleBuddyTest& operator=(const SimpleBuddyTest& rhs) = delete;
+
+    SimpleBuddy mSimpleBuddy;
+    std::array<void*, 4> mAllocatedPtrs{nullptr};
+    std::array<size_t, 4> mAllocationSizes{1,128, 256, 512};
 };
 
 
-TEST_F(SimpleBuddyTest, SimpleBuddy) {
-//    EXPECT_TRUE(false);
-//    //todo test fails
-//    const size_t binaryTreeElements = PiOS::pow(2, 5) -1;
-//    auto binaryTreeMemory = new size_t[binaryTreeElements];
-//    FixedSizeBinaryTree<size_t> binaryTree(binaryTreeMemory, binaryTreeElements);
-//
-//    int memorySize = 16 * 2;
-//    void* managedMemory = ::operator new(memorySize);
-//    unsigned int minBlockExponent = 1;
-//
-//    SimpleBuddy buddy(std::move(binaryTree), memorySize, managedMemory, minBlockExponent);
-//    auto smallestAllocatedSpace = buddy.allocate(1); //smallest possible allocation
-//    size_t allocatedSpace = diff(smallestAllocatedSpace.end(), smallestAllocatedSpace.begin());
-//    ASSERT_EQ(allocatedSpace, 2);
+TEST_F(SimpleBuddyTest, SimpleBuddy_allocation) {
+    const int expectedPageSize = 128; // 1024/(2^(4-1)) = 128
+
+    //allocate 2 smallest elements 128 bytes
+    auto allocatedSpace = mSimpleBuddy.allocate(mAllocationSizes[0]);
+    ASSERT_EQ(allocatedSpace.begin(), managedMemory);
+    auto endOfAllocatedMemory = static_cast<char*>(managedMemory) + expectedPageSize;
+    ASSERT_EQ(allocatedSpace.end(), endOfAllocatedMemory);
+    mAllocatedPtrs[0] = allocatedSpace.begin();
+
+    //second 128 byte
+    allocatedSpace = mSimpleBuddy.allocate(mAllocationSizes[1]);
+    auto beginningOfAllocatedMemory = endOfAllocatedMemory;
+    ASSERT_EQ(allocatedSpace.begin(), beginningOfAllocatedMemory);
+    endOfAllocatedMemory = beginningOfAllocatedMemory + expectedPageSize;
+    ASSERT_EQ(allocatedSpace.end(), endOfAllocatedMemory);
+    mAllocatedPtrs[1] = allocatedSpace.begin();
+
+    // 1024 - 256 bytes left allocate next 256 bytes
+    allocatedSpace = mSimpleBuddy.allocate(mAllocationSizes[2]);
+    beginningOfAllocatedMemory = endOfAllocatedMemory;
+    ASSERT_EQ(allocatedSpace.begin(), beginningOfAllocatedMemory);
+    endOfAllocatedMemory = beginningOfAllocatedMemory + 2*expectedPageSize;
+    ASSERT_EQ(allocatedSpace.end(), endOfAllocatedMemory);
+    mAllocatedPtrs[2] = allocatedSpace.begin();
+
+    // 512 bytes left allocate 512 bytes
+    allocatedSpace = mSimpleBuddy.allocate(mAllocationSizes[3]);
+    beginningOfAllocatedMemory = endOfAllocatedMemory;
+    ASSERT_EQ(allocatedSpace.begin(), beginningOfAllocatedMemory);
+    endOfAllocatedMemory = beginningOfAllocatedMemory + 4*expectedPageSize;
+    ASSERT_EQ(allocatedSpace.end(), endOfAllocatedMemory);
+    mAllocatedPtrs[3] = allocatedSpace.begin();
+
+    //no more space to allocate nullptr should be returned
+    allocatedSpace = mSimpleBuddy.allocate(1024);
+    ASSERT_EQ(allocatedSpace.begin(), nullptr);
+    ASSERT_EQ(allocatedSpace.end(), nullptr);
+}
+
+TEST_F(SimpleBuddyTest, SimpleBuddy_deallocation) {
+    //all memory is allocated, because of allocation test.
+    //we can check whether memory was well deallocated by
+    //deallocating and rellocating the same space once again
+
+    for(size_t allocationNo=0; allocationNo < mAllocatedPtrs.size(); ++allocationNo){
+        mSimpleBuddy.deallocate(mAllocatedPtrs[allocationNo]);
+        auto allocatedSpace = mSimpleBuddy.allocate(mAllocationSizes[allocationNo]);
+        EXPECT_EQ(allocatedSpace.begin(), mAllocatedPtrs[allocationNo]);
+    }
 }
