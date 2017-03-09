@@ -108,6 +108,16 @@ namespace PiOS {
         void allocateChildren(NodeId rightChild, NodeId leftChild);
 
         MemorySpace calculateMemoryToAllocate(const NodeId &currentMemoryNode, size_t pageSize) const;
+
+        ptrdiff_t ptrDiff(const void *ptr1, const void *ptr2);
+
+        void destroyNode(NodeId node);
+
+        NodeId buddy(NodeId currentNode);
+
+        bool isNodeRoot(NodeId &currentNode) const;
+
+        void merge(NodeId id, const NodeId secondBuddy, size_t currentPageSize);
     };
 
 }

@@ -22,8 +22,15 @@ public:
     SimpleBuddyTest& operator=(const SimpleBuddyTest& rhs) = delete;
 
     SimpleBuddy mSimpleBuddy;
-    std::array<void*, 4> mAllocatedPtrs{nullptr};
-    std::array<size_t, 4> mAllocationSizes{1,128, 256, 512};
+    std::array<void *, 4> mAllocatedPtrs{{nullptr, nullptr, nullptr, nullptr}};
+    std::array<size_t, 4> mAllocationSizes{{1, 128, 256, 512}};
+
+    void allocateAllSpace() {
+        for (size_t elementIdx = 0; elementIdx < mAllocationSizes.size(); ++elementIdx) {
+            const auto allocationSize = mAllocationSizes[elementIdx];
+            mAllocatedPtrs[elementIdx] = mSimpleBuddy.allocate(allocationSize).begin();
+        }
+    }
 };
 
 
@@ -71,10 +78,23 @@ TEST_F(SimpleBuddyTest, SimpleBuddy_deallocation) {
     //all memory is allocated, because of allocation test.
     //we can check whether memory was well deallocated by
     //deallocating and rellocating the same space once again
+    allocateAllSpace();
+
+    mSimpleBuddy.deallocate(nullptr);
 
     for(size_t allocationNo=0; allocationNo < mAllocatedPtrs.size(); ++allocationNo){
         mSimpleBuddy.deallocate(mAllocatedPtrs[allocationNo]);
         auto allocatedSpace = mSimpleBuddy.allocate(mAllocationSizes[allocationNo]);
         EXPECT_EQ(allocatedSpace.begin(), mAllocatedPtrs[allocationNo]);
     }
+    ASSERT_EQ(mSimpleBuddy.allocate(1).begin(), nullptr);
+
+    //only crash test
+    for (size_t allocationNo = 0; allocationNo < mAllocatedPtrs.size(); ++allocationNo) {
+        mSimpleBuddy.deallocate(mAllocatedPtrs[allocationNo]);
+    }
+
+    ASSERT_EQ(mSimpleBuddy.allocate(1024).begin(), managedMemory);
+    mSimpleBuddy.deallocate(managedMemory);
+
 }

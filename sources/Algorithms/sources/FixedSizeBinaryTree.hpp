@@ -27,7 +27,7 @@ namespace PiOS {
          * @param rank Rank(depth) of Node in the binary tree
          * @param rowIndex Index of the Node in the current rank(depth)
          */
-        explicit NodeId(unsigned int rank, unsigned int rowIndex) : mRank(rank), mIndexInRank(rowIndex) {
+        explicit NodeId(RankType rank, unsigned int rowIndex) : mRank(rank), mIndexInRank(rowIndex) {
             auto invalidValue = std::numeric_limits<decltype(rank)>::max();
             if (rank == invalidValue or rowIndex == invalidValue)
                 return;
@@ -53,6 +53,15 @@ namespace PiOS {
          */
         bool operator==(const NodeId &rhs) const {
             return absoluteIndex() == rhs.absoluteIndex();
+        }
+
+        /*!
+         * \brief Comparison operator.
+         * @param rhs Right hand side of the comparison.
+         * @return true if both nodes represent the same value.
+         */
+        bool operator!=(const NodeId &rhs) const {
+            return !(*this == rhs);
         }
 
         /*!

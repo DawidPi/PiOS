@@ -54,9 +54,52 @@ namespace PiOS {
         return MemorySpace(begin, end);
     }
 
-    void SimpleBuddy::deallocate(void *) {
+    void SimpleBuddy::deallocate(void *deallocationSpaceStart) {
+        if (deallocationSpaceStart == nullptr)
+            return;
 
+        auto pageSize = minPageSize();
+        const NodeId::RankType startRank = mBinaryTree.depth() - 1;
+        const std::ptrdiff_t startOffsetInRank = static_cast<decltype(startOffsetInRank)>(
+                                                         ptrDiff(deallocationSpaceStart, mSpacePtr)) / pageSize;
+
+        NodeId currentNode(startRank, startOffsetInRank);
+
+        while (!isCreated(currentNode)) {
+            currentNode = mBinaryTree.parent(currentNode);
+            pageSize *= 2;
+        }
+
+        mBinaryTree.setValue(currentNode, pageSize);
+
+        while (not isNodeRoot(currentNode)) {
+            const auto buddyNode = buddy(currentNode);
+            assert(isCreated(buddyNode));
+            const auto parent = mBinaryTree.parent(currentNode);
+            const size_t buddyValue = mBinaryTree.value(buddyNode);
+            const auto currentValue = mBinaryTree.value(currentNode);
+
+            const bool isBuddyUsed = buddyValue != pageSize;
+            const bool isCurrentUsed = currentValue != pageSize;
+
+            if (not isBuddyUsed and not isCurrentUsed) {
+                merge(currentNode, buddyNode, pageSize);
+            } else {
+
+                const auto biggerFreePage = std::max(currentValue, buddyValue);
+
+                if (mBinaryTree.value(parent) != biggerFreePage)
+                    mBinaryTree.setValue(parent, biggerFreePage);
+                else
+                    break;
+            }
+
+            pageSize *= 2;
+            currentNode = parent;
+        }
     }
+
+    bool SimpleBuddy::isNodeRoot(NodeId &currentNode) const { return currentNode == mBinaryTree.root(); }
 
     SimpleBuddy::~SimpleBuddy() {
 
@@ -190,6 +233,29 @@ namespace PiOS {
     bool SimpleBuddy::isCreated(NodeId node) {
         const size_t notCreatedTag = static_cast<size_t>(MemoryBlockStatus::NOT_CREATED);
         return mBinaryTree.value(node) != notCreatedTag;
+    }
+
+    ptrdiff_t SimpleBuddy::ptrDiff(const void *ptr1, const void *ptr2) {
+        return static_cast<const char *>(ptr1) - static_cast<const char *>(ptr2);
+    }
+
+    void SimpleBuddy::destroyNode(NodeId node) {
+        mBinaryTree.setValue(node, static_cast<size_t>(MemoryBlockStatus::NOT_CREATED));
+    }
+
+    NodeId SimpleBuddy::buddy(NodeId currentNode) {
+        auto isCurrentRightBuddy = static_cast<bool>(currentNode.indexInRank() % 2);
+        if (isCurrentRightBuddy) {
+            return NodeId(currentNode.rank(), currentNode.indexInRank() - 1);
+        } else {
+            return NodeId(currentNode.rank(), currentNode.indexInRank() + 1);
+        }
+    }
+
+    void SimpleBuddy::merge(NodeId firstBuddy, const NodeId secondBuddy, size_t currentPageSize) {
+        destroyNode(firstBuddy);
+        destroyNode(secondBuddy);
+        mBinaryTree.setValue(mBinaryTree.parent(firstBuddy), currentPageSize * 2);
     }
 
 }
