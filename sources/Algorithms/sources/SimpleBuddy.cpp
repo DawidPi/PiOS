@@ -31,26 +31,31 @@ namespace PiOS {
         if (sizeToAllocate > currentTotalFreeMemory)
             return MemorySpace(nullptr, nullptr);
 
-        auto pageSize = fitSizeToPage(sizeToAllocate);
+        const auto pageSize = fitSizeToPage(sizeToAllocate);
 
         for (NodeId::RankType rank = 0; rank < mBinaryTree.maxTransitions(); rank++) {
             NodeId next = nextNode(currentMemoryNode, pageSize);
 
-            if (next == currentMemoryNode) {
+            const bool treeTraversalFinished = next == currentMemoryNode;
+            if (treeTraversalFinished)
                 break;
-            }
+
             currentMemoryNode = next;
         }
 
         MemorySpace memory = calculateMemoryToAllocate(currentMemoryNode, pageSize);
-        mBinaryTree.setValue(currentMemoryNode, static_cast<size_t>(MemoryBlockStatus::FULLY_ALLOCATED));
+        markAsAllocated(currentMemoryNode);
 
         return memory;
     }
 
-    MemorySpace SimpleBuddy::calculateMemoryToAllocate(const NodeId &currentMemoryNode, size_t pageSize) const {
-        void* begin = memoryNodeToPage(currentMemoryNode);
-        void* end = static_cast<char*>(begin) + pageSize;
+    void SimpleBuddy::markAsAllocated(NodeId currentMemoryNode) {
+        mBinaryTree.setValue(currentMemoryNode, static_cast<size_t>(MemoryBlockStatus::FULLY_ALLOCATED));
+    }
+
+    MemorySpace SimpleBuddy::calculateMemoryToAllocate(NodeId currentMemoryNode, size_t pageSize) const {
+        void *begin = memoryNodeToPage(currentMemoryNode);
+        void *end = static_cast<char *>(begin) + pageSize;
         return MemorySpace(begin, end);
     }
 
@@ -60,35 +65,27 @@ namespace PiOS {
 
         auto pageSize = minPageSize();
         const NodeId::RankType startRank = mBinaryTree.depth() - 1;
-        const std::ptrdiff_t startOffsetInRank = static_cast<decltype(startOffsetInRank)>(
-                                                         ptrDiff(deallocationSpaceStart, mSpacePtr)) / pageSize;
+        const auto startOffsetInRank = static_cast<unsigned int>(ptrDiff(deallocationSpaceStart, mSpacePtr) / pageSize);
 
         NodeId currentNode(startRank, startOffsetInRank);
 
-        while (!isCreated(currentNode)) {
-            currentNode = mBinaryTree.parent(currentNode);
-            pageSize *= 2;
-        }
-
+        findNodeToDeallocate(pageSize, currentNode);
         mBinaryTree.setValue(currentNode, pageSize);
 
         while (not isNodeRoot(currentNode)) {
             const auto buddyNode = buddy(currentNode);
             assert(isCreated(buddyNode));
+
             const auto parent = mBinaryTree.parent(currentNode);
-            const size_t buddyValue = mBinaryTree.value(buddyNode);
+            const auto buddyValue = mBinaryTree.value(buddyNode);
             const auto currentValue = mBinaryTree.value(currentNode);
 
-            const bool isBuddyUsed = buddyValue != pageSize;
-            const bool isCurrentUsed = currentValue != pageSize;
-
-            if (not isBuddyUsed and not isCurrentUsed) {
+            if (not areBuddiesUsed(currentValue, buddyValue, pageSize)) {
                 merge(currentNode, buddyNode, pageSize);
             } else {
-
                 const auto biggerFreePage = std::max(currentValue, buddyValue);
 
-                if (mBinaryTree.value(parent) != biggerFreePage)
+                if (parentShouldBeUpdated(parent, biggerFreePage))
                     mBinaryTree.setValue(parent, biggerFreePage);
                 else
                     break;
@@ -96,6 +93,21 @@ namespace PiOS {
 
             pageSize *= 2;
             currentNode = parent;
+        }
+    }
+
+    bool SimpleBuddy::parentShouldBeUpdated(NodeId parent, const size_t biggerFreePage) const {
+        return mBinaryTree.value(parent) != biggerFreePage;
+    }
+
+    bool SimpleBuddy::areBuddiesUsed(size_t firstBuddyValue, size_t secondBuddyValue, size_t emptyPageSize) const {
+        return firstBuddyValue != emptyPageSize or secondBuddyValue != emptyPageSize;
+    }
+
+    void SimpleBuddy::findNodeToDeallocate(size_t &pageSize, NodeId &currentNode) {
+        while (!isCreated(currentNode)) {
+            currentNode = mBinaryTree.parent(currentNode);
+            pageSize *= 2;
         }
     }
 
@@ -124,15 +136,15 @@ namespace PiOS {
 
         auto currentValue = mBinaryTree.value(node);
 
-        if(!isCreated(rightChild) and currentValue > sizeToAllocate){
+        if (!isCreated(rightChild) and currentValue > sizeToAllocate) {
             assert(!isCreated(leftChild)); // children are created and destroyed in pairs
 
 
             allocateChildren(rightChild, leftChild);
 
             auto parentSize = mBinaryTree.value(node);
-            mBinaryTree.setValue(node, parentSize/2);
-        } else if (!isCreated(rightChild) and currentValue == sizeToAllocate){
+            mBinaryTree.setValue(node, parentSize / 2);
+        } else if (!isCreated(rightChild) and currentValue == sizeToAllocate) {
             return node;
         }
 
@@ -167,7 +179,7 @@ namespace PiOS {
         return nextNode;
     }
 
-    void SimpleBuddy::allocateChildren(NodeId rightChild, NodeId leftChild){
+    void SimpleBuddy::allocateChildren(NodeId rightChild, NodeId leftChild) {
         const auto parentValue = mBinaryTree.value(mBinaryTree.parent(rightChild));
         mBinaryTree.setValue(rightChild, parentValue / 2);
         mBinaryTree.setValue(leftChild, parentValue / 2);
@@ -184,7 +196,7 @@ namespace PiOS {
             assert(node.rank() > 0);
             auto parent = mBinaryTree.parent(node);
             auto parentValue = mBinaryTree.value(parent);
-            maxFreeSpace = parentValue/2;
+            maxFreeSpace = parentValue / 2;
         }
 
         return maxFreeSpace;
@@ -223,7 +235,7 @@ namespace PiOS {
 
     void *SimpleBuddy::memoryNodeToPage(const NodeId &node) const {
         size_t rankOffsets = rankToSize(node.rank());
-        return reinterpret_cast<char*>(mSpacePtr) + node.indexInRank() * rankOffsets;
+        return reinterpret_cast<char *>(mSpacePtr) + node.indexInRank() * rankOffsets;
     }
 
     size_t SimpleBuddy::minPageSize() const {

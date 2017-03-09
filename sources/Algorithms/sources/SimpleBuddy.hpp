@@ -107,7 +107,7 @@ namespace PiOS {
 
         void allocateChildren(NodeId rightChild, NodeId leftChild);
 
-        MemorySpace calculateMemoryToAllocate(const NodeId &currentMemoryNode, size_t pageSize) const;
+        MemorySpace calculateMemoryToAllocate(NodeId currentMemoryNode, size_t pageSize) const;
 
         ptrdiff_t ptrDiff(const void *ptr1, const void *ptr2);
 
@@ -118,6 +118,14 @@ namespace PiOS {
         bool isNodeRoot(NodeId &currentNode) const;
 
         void merge(NodeId id, const NodeId secondBuddy, size_t currentPageSize);
+
+        void markAsAllocated(NodeId currentMemoryNode);
+
+        void findNodeToDeallocate(size_t &pageSize, NodeId &currentNode);
+
+        bool areBuddiesUsed(size_t firstBuddyValue, size_t secondBuddyValue, size_t emptyPageSize) const;
+
+        bool parentShouldBeUpdated(NodeId parent, const size_t biggerFreePage) const;
     };
 
 }
