@@ -11,6 +11,17 @@ set(SOURCES
         power.hpp
         FixedSizeBinaryTree.cpp
         SimpleBuddyFactory.cpp
-        SimpleBuddyFactory.hpp)
+        SimpleBuddyFactory.hpp
+        EDF.hpp
+        RealTimeTask.cpp
+        RealTimeTask.hpp
+        Task.cpp
+        Task.hpp
+        Context.cpp
+        Context.hpp
+        ListEDF.cpp
+        ListEDF.hpp
+        Time.cpp
+        Time.hpp)
 
 add_library(${PROJECT_NAME} ${SOURCES})
