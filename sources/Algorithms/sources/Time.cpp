@@ -14,7 +14,7 @@ bool Time::operator<(const Time &rhs) const {
 }
 
 bool Time::operator>(const Time &rhs) const {
-    return !(*this < rhs);
+    return static_cast<SignedTimeType>(mTime - rhs.mTime) > 0;
 }
 
 bool Time::operator==(const Time &rhs) const {
@@ -22,11 +22,11 @@ bool Time::operator==(const Time &rhs) const {
 }
 
 bool Time::operator<=(const Time &rhs) const {
-    return static_cast<SignedTimeType>(mTime - rhs.mTime) < 0;
+    return !(*this > rhs);
 }
 
 bool Time::operator>=(const Time &rhs) const {
-    return static_cast<SignedTimeType>(mTime - rhs.mTime) >= 0;
+    return !(*this < rhs);
 }
 
 Time Time::operator+(const Time &rhs) const {
@@ -52,7 +52,7 @@ Time &Time::operator-=(const Time &rhs) {
 }
 
 Time &Time::operator-() {
-    mTime = -mTime;
+    mTime = static_cast<TimeType>(-mTime);
     return *this;
 }
 

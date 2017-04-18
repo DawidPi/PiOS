@@ -5,28 +5,36 @@
 #include "ListEDF.hpp"
 #include <algorithm>
 #include <cassert>
+#include <iostream>
 
 PiOS::ListEDF::ListEDF(PiOS::EDF::DeadlineCallback deadlineCallback) :
         EDF(deadlineCallback),
         mRTUnreleasedTasks(),
         mRTTasksList(),
         mBackgroundTask([]() {}),
-        mCurrentTime(0) {}
+        mCurrentTime(0),
+        mBackgroundIsPending(false) {}
+
 
 void PiOS::ListEDF::timeTick(const PiOS::Time &newTime) {
+    assert(newTime >= mCurrentTime);
+
     mCurrentTime = newTime;
     auto emptyJob = std::function<void()>();
     RealTimeTask compareTask(emptyJob, newTime, newTime);
     auto lastItem = std::upper_bound(mRTUnreleasedTasks.begin(), mRTUnreleasedTasks.end(), compareTask,
                                      RealTimeTask::RTTaskComparator(RealTimeTask::RTTaskComparator::RELEASE_TIME));
     std::for_each(mRTUnreleasedTasks.begin(), lastItem, [this](auto &elem) { this->addRealTimeTask(elem); });
+    mRTUnreleasedTasks.erase(mRTUnreleasedTasks.begin(), lastItem);
 
     if (newTime > mRTTasksList.begin()->deadline()) {
         mDeadlineFailFallback();
+        mRTUnreleasedTasks.clear();
+        mRTTasksList.clear();
     }
 }
 
-void PiOS::ListEDF::addRealTimeTask(RealTimeTask &task) {
+void PiOS::ListEDF::addRealTimeTask(const RealTimeTask &task) {
     assert(task.releaseTime() < task.deadline());
     assert(task.deadline() > mCurrentTime);
 
@@ -43,11 +51,20 @@ void PiOS::ListEDF::addRealTimeTask(RealTimeTask &task) {
 }
 
 
-PiOS::Task PiOS::ListEDF::fetchNextTask() {
-    if (mRTTasksList.begin() == mRTTasksList.end())
-        return Task(mBackgroundTask.job());
+PiOS::Task &PiOS::ListEDF::fetchNextTask() {
+    if (mRTTasksList.empty()) {
+        mBackgroundIsPending = true;
+        return mBackgroundTask;
+    }
 
-    const Task returnTask = Task(mRTTasksList.begin()->job());
-    mRTTasksList.erase(mRTTasksList.begin());
-    return returnTask;
+    mBackgroundIsPending = false;
+    return *mRTTasksList.begin();
+}
+
+void PiOS::ListEDF::finishPendingTask() {
+    if (mBackgroundIsPending)
+        return;
+
+    if (not mRTTasksList.empty())
+        mRTTasksList.erase(mRTTasksList.begin());
 }

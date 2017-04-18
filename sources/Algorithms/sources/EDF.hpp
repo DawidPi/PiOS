@@ -15,13 +15,17 @@ namespace PiOS {
     public:
         using DeadlineCallback = std::function<void()>;
 
-        EDF(DeadlineCallback deadlineCallback) : mDeadlineFailFallback(deadlineCallback) {};
+        explicit EDF(DeadlineCallback deadlineCallback) : mDeadlineFailFallback(deadlineCallback) {};
 
-        virtual void addRealTimeTask(RealTimeTask &task) = 0;
+        virtual void timeTick(const Time &newTime) =0;
 
-        virtual void setBackGroundTask(Task &task) = 0;
+        virtual void addRealTimeTask(const RealTimeTask &task) = 0;
 
-        virtual Task fetchNextTask() =0;
+        virtual void setBackgroundTask(const Task &task) = 0;
+
+        virtual Task &fetchNextTask() =0;
+
+        virtual void finishPendingTask() =0;
 
         virtual ~EDF() {};
     protected:

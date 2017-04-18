@@ -17,7 +17,7 @@ namespace PiOS {
                 RELEASE_TIME, DEADLINE
             };
 
-            RTTaskComparator(CompareType compareType) : mCompareType(compareType) {}
+            explicit RTTaskComparator(CompareType compareType) : mCompareType(compareType) {}
 
             bool operator()(const RealTimeTask &lhs, const RealTimeTask &rhs) {
                 if (mCompareType == RELEASE_TIME)
@@ -30,7 +30,7 @@ namespace PiOS {
             CompareType mCompareType;
         };
 
-        RealTimeTask(const TaskJob &task, const Time &startTime, const Time &deadline)
+        explicit RealTimeTask(const TaskJob &task, const Time &startTime, const Time &deadline)
                 : Task(task),
                   mDeadline(deadline),
                   mReleaseTime(startTime) {}

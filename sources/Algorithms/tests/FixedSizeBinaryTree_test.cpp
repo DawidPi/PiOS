@@ -73,8 +73,8 @@ TEST_F(FixedSizeBinaryTreeTest, constructorTest) {
     testNode(node, true, 4, 15, 30);
 
     // Windows sucks and is a fuckin' lame
-//    Element a;
-//    EXPECT_DEATH(FixedSizeBinaryTree<Element>(&a, 0, 0), ".*");
+    //    Element a;
+    //    EXPECT_DEATH(FixedSizeBinaryTree<Element>(&a, 0, 0), ".*");
 
     free(managedSpace);
 }

@@ -7,25 +7,29 @@
 
 #include "EDF.hpp"
 #include <list>
+#include "Task.hpp"
 
 namespace PiOS {
     class ListEDF : public EDF {
     public:
-        ListEDF(DeadlineCallback deadlineCallback);
+        explicit ListEDF(DeadlineCallback deadlineCallback);
 
-        void timeTick(const Time &newTime);
+        void timeTick(const Time &newTime) override;
 
-        void addRealTimeTask(RealTimeTask &task) override;
+        void addRealTimeTask(const RealTimeTask &task) override;
 
-        void setBackGroundTask(Task &task) override { mBackgroundTask = task; }
+        void setBackgroundTask(const Task &task) override { mBackgroundTask = task; }
 
-        Task fetchNextTask() override;
+        void finishPendingTask() override;
+
+        Task &fetchNextTask() override;
 
     private:
         std::list<RealTimeTask> mRTUnreleasedTasks;
         std::list<RealTimeTask> mRTTasksList;
         Task mBackgroundTask;
         Time mCurrentTime;
+        bool mBackgroundIsPending;
     };
 }
 

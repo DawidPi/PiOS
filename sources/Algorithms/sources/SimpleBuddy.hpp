@@ -24,8 +24,8 @@ namespace PiOS {
          * @param spacePtr Pointer to the beginning of managed space.
          * @param minBlockSizeExponent Minimum size of the page calculated as: pow(2,minBlockSizeExponent)
          */
-        SimpleBuddy(FixedSizeBinaryTree<size_t> &&binaryTree, size_t spaceSize, void *spacePtr,
-                    unsigned int minBlockSizeExponent);
+        explicit SimpleBuddy(FixedSizeBinaryTree<size_t> &&binaryTree, size_t spaceSize, void *spacePtr,
+                             unsigned int minBlockSizeExponent);
 
         /*!
          * \brief Move constructor. Transfers ownership of managed resources from moved object.

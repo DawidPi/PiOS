@@ -21,7 +21,7 @@ namespace PiOS {
         using TimeType = uint16_t;
         using SignedTimeType = int16_t;
 
-        Time(SignedTimeType timeValue = 0);
+        explicit Time(SignedTimeType timeValue = 0);
 
         TimeType getRawValue() const { return mTime; }
 
@@ -55,6 +55,8 @@ namespace PiOS {
         bool operator>(const Time &rhs) const;
 
         bool operator==(const Time &rhs) const;
+
+        bool operator!=(const Time &rhs) const { return !(*this == rhs); };
 
         bool operator<=(const Time &rhs) const;
 

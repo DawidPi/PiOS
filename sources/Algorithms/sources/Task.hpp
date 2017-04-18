@@ -9,12 +9,11 @@
 #include "Context.hpp"
 
 namespace PiOS {
-    //todo implement Task
     class Task {
     public:
         using TaskJob = std::function<void()>;
 
-        Task(TaskJob task);
+        explicit Task(TaskJob task);
 
         void start();
 
