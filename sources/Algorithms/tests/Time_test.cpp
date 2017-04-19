@@ -78,3 +78,20 @@ TEST_F(TimeTest, randomComparisonTest) {
     ASSERT_GE(3000_time, -3000_time);
     ASSERT_GE(2456_time, -2456_time);
 }
+
+TEST_F(TimeTest, incrementTest) {
+    auto time = 1_time;
+    ASSERT_EQ(time++, 1_time);
+    ASSERT_EQ(time, 2_time);
+    ASSERT_EQ(++time, 3_time);
+
+    auto timeRandomPlus = 534_time; //fairly random
+    ASSERT_EQ(timeRandomPlus++, 534_time);
+    ASSERT_EQ(timeRandomPlus, 535_time);
+    ASSERT_EQ(++timeRandomPlus, 536_time);
+
+    auto timeRandomMinus = -534_time; //fairly random
+    ASSERT_EQ(timeRandomMinus++, -534_time);
+    ASSERT_EQ(timeRandomMinus, -533_time);
+    ASSERT_EQ(++timeRandomMinus, -532_time);
+}

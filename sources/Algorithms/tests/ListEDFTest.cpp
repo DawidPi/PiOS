@@ -9,7 +9,7 @@ using namespace PiOS;
 
 class ListEDFTest : public ::testing::Test {
 public:
-    ListEDFTest() : mEDF([]() {}) {
+    ListEDFTest() : mEDF([]() {}, PiOS::EDF::DeadlineCallback()) {
 
     }
 
@@ -27,7 +27,7 @@ public:
 };
 
 TEST_F(ListEDFTest, backgroundGetSetTest) {
-    mEDF = ListEDF([]() {});
+    mEDF = ListEDF([]() {}, PiOS::EDF::DeadlineCallback());
     bool backgroundFlag = false;
     mEDF.setBackgroundTask(Task(FlagChangingTask(backgroundFlag)));
     mEDF.fetchNextTask().job()();
@@ -39,7 +39,7 @@ TEST_F(ListEDFTest, backgroundGetSetTest) {
 }
 
 TEST_F(ListEDFTest, wrongUsage) {
-    mEDF = ListEDF([]() {});
+    mEDF = ListEDF([]() {}, PiOS::EDF::DeadlineCallback());
     bool backgroundFlag = false;
     mEDF.setBackgroundTask(Task(FlagChangingTask(backgroundFlag)));
 
@@ -73,15 +73,21 @@ TEST_F(ListEDFTest, wrongUsage) {
 }
 
 TEST_F(ListEDFTest, timeout_errorCalled) {
-    bool mErrorCalled = false;
-    mEDF = ListEDF([&mErrorCalled]() { mErrorCalled = true; });
+    bool mImmediateErrorCalled = false;
+    bool mLateErrorCalled = false;
+
+    mEDF = ListEDF([&mImmediateErrorCalled]() { mImmediateErrorCalled = true; },
+                   [&mLateErrorCalled]() { mLateErrorCalled = true; });
+
     mEDF.timeTick(0_time);
     RealTimeTask task([]() {}, 0_time, 3_time);
     mEDF.addRealTimeTask(task);
-    mEDF.timeTick(4_time);
-    ASSERT_TRUE(mErrorCalled);
 
-    mEDF = ListEDF([]() {});
+    mEDF.timeTick(4_time);
+    ASSERT_TRUE(mImmediateErrorCalled);
+    ASSERT_TRUE(mLateErrorCalled);
+
+    mEDF = ListEDF([]() {}, []() {});
 }
 
 TEST_F(ListEDFTest, appendRealTimeTask) {
@@ -116,7 +122,7 @@ TEST_F(ListEDFTest, appendRealTimeTask) {
     //all real time tasks finished. Time for background task
     mEDF.fetchNextTask().job()();
     ASSERT_TRUE(backgroundTaskFlag);
-    mEDF = ListEDF([]() {});
+    mEDF = ListEDF([]() {}, PiOS::EDF::DeadlineCallback());
 }
 
 TEST_F(ListEDFTest, unreleasedTasks) {
@@ -158,5 +164,5 @@ TEST_F(ListEDFTest, unreleasedTasks) {
     }
     ASSERT_TRUE(
             std::all_of(releasesTimes.begin(), releasesTimes.end(), [](auto &elem) { return elem.second == true; }));
-    mEDF = ListEDF([]() {});
+    mEDF = ListEDF([]() {}, PiOS::EDF::DeadlineCallback());
 }

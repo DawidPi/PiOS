@@ -7,8 +7,8 @@
 #include <cassert>
 #include <iostream>
 
-PiOS::ListEDF::ListEDF(PiOS::EDF::DeadlineCallback deadlineCallback) :
-        EDF(deadlineCallback),
+PiOS::ListEDF::ListEDF(DeadlineCallback deadlineCallback, DeadlineCallback postFailCallback) :
+        EDF(deadlineCallback, postFailCallback),
         mRTUnreleasedTasks(),
         mRTTasksList(),
         mBackgroundTask([]() {}),
@@ -31,6 +31,7 @@ void PiOS::ListEDF::timeTick(const PiOS::Time &newTime) {
         mDeadlineFailFallback();
         mRTUnreleasedTasks.clear();
         mRTTasksList.clear();
+        mPostFailCallback();
     }
 }
 
