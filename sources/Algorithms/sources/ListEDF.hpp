@@ -23,6 +23,11 @@ namespace PiOS {
          */
         explicit ListEDF(DeadlineCallback deadlineCallback, DeadlineCallback postFailCallback = []() {});
 
+        ListEDF(const ListEDF &rhs) = delete;
+
+        ListEDF &operator=(const ListEDF &rhs) = delete;
+
+
         /*!
          * \brief Informs EDF, about time slice elapsed.
          *
@@ -85,6 +90,14 @@ namespace PiOS {
         Task mBackgroundTask;
         Time mCurrentTime;
         bool mBackgroundIsPending;
+        std::list<PiOS::RealTimeTask>::iterator mPendingRTTask;
+
+    private:
+        bool isPendingTaskValid() const;
+
+        void updateCurrentTime(const PiOS::Time &newTime) { mCurrentTime = newTime; }
+
+        std::list<PiOS::RealTimeTask>::iterator findLastInvalidWaitingTask(const PiOS::Time &newTime);
     };
 }
 
