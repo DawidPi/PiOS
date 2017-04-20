@@ -3,7 +3,6 @@ project(Algorithms)
 set(CMAKE_CXX_STANDARD 14)
 
 set(SOURCES
-        Buddy.hpp
         SimpleBuddy.cpp
         SimpleBuddy.hpp
         FixedSizeBinaryTreeImpl.hpp
@@ -22,6 +21,6 @@ set(SOURCES
         ListEDF.cpp
         ListEDF.hpp
         Time.cpp
-        Time.hpp)
+        Time.hpp TLSF.cpp TLSF.hpp DynamicAllocator.hpp)
 
 add_library(${PROJECT_NAME} ${SOURCES})
