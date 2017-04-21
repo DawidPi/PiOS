@@ -8,7 +8,9 @@ set(SOURCES
         FixedSizeBinaryTree_test.cpp
         SimpleBuddy_test.cpp
         Time_test.cpp
-        ListEDFTest.cpp)
+        ListEDFTest.cpp
+        MSBLSBCalculator_test.cpp
+        BitSliceCalculator_test.cpp)
 
 enable_gtest("${SOURCES}" Algorithms)
 

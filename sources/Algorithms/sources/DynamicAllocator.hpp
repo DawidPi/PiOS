@@ -19,7 +19,9 @@ namespace PiOS {
          * \param begin beginning of the allocated space in memory
          * \param end the end of the allocated space in the memory, such as beginning+size=end.
          */
-        explicit MemorySpace(void *begin, void *end) : mBegin(begin), mEnd(end), mSize(mEnd - mBegin) {}
+        explicit MemorySpace(void *begin, void *end) : mBegin(begin),
+                                                       mEnd(end),
+                                                       mSize(static_cast<char *>(mEnd) - static_cast<char *>(mBegin)) {}
 
         /*!
          * \brief gives information about beginning of the allocated memory
