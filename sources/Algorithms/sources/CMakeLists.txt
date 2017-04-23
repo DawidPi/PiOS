@@ -22,10 +22,12 @@ set(SOURCES
         ListEDF.hpp
         Time.cpp
         Time.hpp
-        TLSF.cpp
+        TLSFImpl.hpp
         TLSF.hpp
         DynamicAllocator.hpp
         MsbLsbCalculator.cpp
-        MsbLsbCalculator.hpp BitSliceCalculator.cpp BitSliceCalculator.hpp)
+        MsbLsbCalculator.hpp
+        BitSliceCalculator.cpp
+        BitSliceCalculator.hpp)
 
 add_library(${PROJECT_NAME} ${SOURCES})

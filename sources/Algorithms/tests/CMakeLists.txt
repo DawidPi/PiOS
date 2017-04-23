@@ -10,7 +10,8 @@ set(SOURCES
         Time_test.cpp
         ListEDFTest.cpp
         MSBLSBCalculator_test.cpp
-        BitSliceCalculator_test.cpp)
+        BitSliceCalculator_test.cpp
+        TLSF_test.cpp)
 
 enable_gtest("${SOURCES}" Algorithms)
 
