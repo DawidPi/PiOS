@@ -3,11 +3,11 @@
 //
 
 #include <gtest/gtest.h>
-#include <MsbLsbCalculator.hpp>
+#include <MsbLsb.hpp>
 
 using namespace PiOS;
 
-class MSBLSBCalculatorTest : public ::testing::Test {
+class MsbLsbTest : public ::testing::Test {
 public:
     int msb(uint32_t value) {
         unsigned int idxPos = 0;
@@ -16,8 +16,8 @@ public:
     }
 };
 
-TEST_F(MSBLSBCalculatorTest, MSBForInteger) {
-    MsbLsbCalculator calculator;
+TEST_F(MsbLsbTest, MSBForInteger) {
+    MsbLsb calculator;
 
     ASSERT_EQ(calculator.calculateMSB(0), -1);
 
@@ -35,8 +35,8 @@ TEST_F(MSBLSBCalculatorTest, MSBForInteger) {
     }
 }
 
-TEST_F(MSBLSBCalculatorTest, MSBForBitset) {
-    MsbLsbCalculator calculator;
+TEST_F(MsbLsbTest, MSBForBitset) {
+    MsbLsb calculator;
 
     std::bitset<32> bitset;
     ASSERT_EQ(calculator.calculateMSB(bitset), -1);
@@ -48,8 +48,8 @@ TEST_F(MSBLSBCalculatorTest, MSBForBitset) {
     }
 }
 
-TEST_F(MSBLSBCalculatorTest, LSBForBitset) {
-    MsbLsbCalculator calculator;
+TEST_F(MsbLsbTest, LSBForBitset) {
+    MsbLsb calculator;
 
     std::bitset<32> bitset;
     ASSERT_EQ(calculator.calculateMSB(bitset), -1);
@@ -61,8 +61,8 @@ TEST_F(MSBLSBCalculatorTest, LSBForBitset) {
     }
 }
 
-TEST_F(MSBLSBCalculatorTest, LSBForInteger) {
-    MsbLsbCalculator calculator;
+TEST_F(MsbLsbTest, LSBForInteger) {
+    MsbLsb calculator;
 
     ASSERT_EQ(calculator.calculateMSB(0), -1);
 

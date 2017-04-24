@@ -4,8 +4,8 @@
 
 #include <cassert>
 #include "TLSF.hpp"
-#include "MsbLsbCalculator.hpp"
-#include "BitSliceCalculator.hpp"
+#include "MsbLsb.hpp"
+#include "BitSlice.hpp"
 
 using namespace PiOS;
 
@@ -16,42 +16,74 @@ TLSF<SL_BITS, BitfieldType>::TLSF(MemorySpace memoryToManage) :
         mManagedMemorySpace(memoryToManage) {}
 
 template<unsigned int SL_BITS, typename BitfieldType>
-MemorySpace TLSF<SL_BITS, BitfieldType>::allocate(size_t size) {
-    size = adjustSize(size);
+MemorySpace TLSF<SL_BITS, BitfieldType>::allocate(std::size_t size) {
+    adjustSize(size);
 
     if (size > availableFreeMemory())
         return MemorySpace(nullptr, nullptr);
 
-    auto indexes = sizeToIndexes(size);
-    indexes = findSuitableExistingBlock(indexes);
+    auto indexes = findSuitableExistingBlock(size);
 
-    UniversalBlock &freeBlockHeader = fetchHeader(indexes, size);
-    freeBlockHeader.setUsedFlag(true);
+    UniversalBlock *freeBlockHeader = fetchHeader(indexes, size);
+    assert(freeBlockHeader != nullptr);
+    assert(freeBlockHeader->isUsed());
+    assert(freeBlockHeader->size() >= size);
 
-    return MemorySpace(freeBlockHeader.memory(),
-                       static_cast<char *>(freeBlockHeader.memory()) + freeBlockHeader.size());
+    return MemorySpace(freeBlockHeader->memory(),
+                       static_cast<char *>(freeBlockHeader->memory()) + freeBlockHeader->size());
 }
 
 template<unsigned int SL_BITS, typename BitfieldType>
-size_t TLSF<SL_BITS, BitfieldType>::adjustSize(size_t size) const {
-    if (size < MIN_BLOCK_SIZE)
-        size = MIN_BLOCK_SIZE;
-    return size;
+void TLSF<SL_BITS, BitfieldType>::adjustSize(std::size_t &size) const {
+    if (size < MIN_BLOCK_SIZE) size = MIN_BLOCK_SIZE;
 }
 
 template<unsigned int SL_BITS, typename BitfieldType>
 typename TLSF<SL_BITS, BitfieldType>::Indexes
-TLSF<SL_BITS, BitfieldType>::findSuitableExistingBlock(Indexes preferableIndexes) {
-    std::bitset<FL_SIZE> fliBitset(preferableIndexes.fli);
-    std::bitset<FL_SIZE> mask = ~((~std::bitset<FL_SIZE>()) >> (FL_SIZE - preferableIndexes.fli));
-    MsbLsbCalculator lsbCalculator;
+TLSF<SL_BITS, BitfieldType>::findSuitableExistingBlock(size_t size) {
 
-    int smallestAvailableFli = lsbCalculator.calculateLSB(mMetadata.flBitset() & mask);
-    assert(smallestAvailableFli >= 0);
+    auto indexes = sizeToIndexes(size);
+    auto sliInCurrentFli = findSliInCurrentFli(indexes);
 
-    auto sliBitset = mMetadata.slBitsetForFl(smallestAvailableFli);
-    int smallestAvailableSli = lsbCalculator.calculateLSB(sliBitset);
-    return TLSF::Indexes(smallestAvailableFli, smallestAvailableSli);
+    Indexes foundIndexes(0, 0);
+
+    if (sliInCurrentFli.any()) {
+        foundIndexes = Indexes(indexes.fli, MsbLsb().calculateLSB(sliInCurrentFli));
+    } else {
+        foundIndexes = findNextFreeBlocks(indexes);
+        assert(foundIndexes.fli > indexes.fli);
+    }
+
+    return foundIndexes;
+}
+
+template<unsigned int SL_BITS, typename BitfieldType>
+typename TLSF<SL_BITS, BitfieldType>::Indexes
+TLSF<SL_BITS, BitfieldType>::findNextFreeBlocks(TLSF::Indexes indexes) {
+    const auto allOnesFli = ~std::bitset<FL_SIZE>();
+    auto mask = allOnesFli >> (FL_SIZE - indexes.fli);
+    mask ^= allOnesFli;
+
+    auto fliIdx = MsbLsb().calculateLSB(mMetadata.flBitset() & mask);
+    assert(fliIdx >= 0);
+    assert(mMetadata.slBitsetForFl(fliIdx).any());
+
+    auto sliIdx = MsbLsb().calculateLSB(mMetadata.slBitsetForFl(fliIdx));
+    assert(sliIdx >= 0);
+
+    return Indexes(fliIdx, sliIdx);
+}
+
+
+template<unsigned int SL_BITS, typename BitfieldType>
+std::bitset<SL_BITS> TLSF<SL_BITS, BitfieldType>::findSliInCurrentFli(Indexes indexes) const {
+    auto sliBitset = mMetadata.slBitsetForFl(indexes.fli);
+    auto sliIndex = MsbLsb().calculateLSB(sliBitset);
+    const auto allOnesSli = ~std::bitset<SL_BITS>();
+    auto mask = allOnesSli >> (SL_BITS - sliIndex);
+    mask ^= allOnesSli;
+
+    return sliBitset & mask;
 }
 
 template<unsigned int SL_BITS, typename BitfieldType>
@@ -60,8 +92,8 @@ void TLSF<SL_BITS, BitfieldType>::deallocate(void *) {
 }
 
 template<unsigned int SL_BITS, typename BitfieldType>
-size_t TLSF<SL_BITS, BitfieldType>::availableFreeMemory() {
-    MsbLsbCalculator msbCalc;
+std::size_t TLSF<SL_BITS, BitfieldType>::availableFreeMemory() {
+    MsbLsb msbCalc;
     auto fli = msbCalc.calculateMSB(mMetadata.flBitset());
     auto sli = msbCalc.calculateMSB(mMetadata.slBitsetForFl(fli).to_ulong());
 
@@ -69,7 +101,7 @@ size_t TLSF<SL_BITS, BitfieldType>::availableFreeMemory() {
 }
 
 template<unsigned int SL_BITS, typename BitfieldType>
-size_t TLSF<SL_BITS, BitfieldType>::indexesToSize(TLSF::Indexes indexes) {
+std::size_t TLSF<SL_BITS, BitfieldType>::indexesToSize(TLSF::Indexes indexes) {
     std::bitset<FL_SIZE> size;
     size.set(indexes.fli);
     size |= indexes.sli << (indexes.fli - SL_BITS);
@@ -78,11 +110,14 @@ size_t TLSF<SL_BITS, BitfieldType>::indexesToSize(TLSF::Indexes indexes) {
 }
 
 template<unsigned int SL_BITS, typename BitfieldType>
-typename TLSF<SL_BITS, BitfieldType>::Indexes TLSF<SL_BITS, BitfieldType>::sizeToIndexes(size_t size) {
-    MsbLsbCalculator msbCalc;
-    BitSliceCalculator mSlice;
+typename TLSF<SL_BITS, BitfieldType>::Indexes TLSF<SL_BITS, BitfieldType>::sizeToIndexes(std::size_t size) {
+    assert(size > 0);
+
+    MsbLsb msbCalc;
+    BitSlice slice;
+
     auto fli = msbCalc.calculateMSB(size);
-    auto sli = mSlice.calculate(size, fli - SL_BITS, fli);
+    auto sli = slice.calculate(size, fli - SL_BITS, fli);
     return Indexes(fli, sli);
 }
 
@@ -94,28 +129,49 @@ bool TLSF<SL_BITS, BitfieldType>::isBlockAvailable(TLSF::Indexes indexes) {
 }
 
 template<unsigned int SL_BITS, typename BitfieldType>
-typename TLSF<SL_BITS, BitfieldType>::UniversalBlock &
-TLSF<SL_BITS, BitfieldType>::fetchHeader(Indexes indexes, size_t trimSize) {
+typename TLSF<SL_BITS, BitfieldType>::UniversalBlock *
+TLSF<SL_BITS, BitfieldType>::fetchHeader(Indexes indexes, std::size_t trimSize) {
 
-    FreeBlockHeader *blockHeader = mMetadata.slForFl(indexes.fli)[indexes.sli];
+    FreeBlockHeader *blockHeader = popFromQueue(indexes);
     assert(blockHeader != nullptr);
 
-    FreeBlockHeader *nextFreeBlock = blockHeader->nextFreeBlock();
-    mMetadata.slForFl(indexes.fli)[indexes.sli] = nextFreeBlock;
+    trimBlockToSize(blockHeader, trimSize);
+    auto *foundBlock = changeBlockToUsed(blockHeader);
 
-    updateBitsets(indexes, nextFreeBlock);
-    splitBlockToSize(blockHeader, trimSize);
-
-    FreeBlockHeader resultHeader = *blockHeader;
-
-    blockHeader->~FreeBlockHeader();
-
-    return *new(blockHeader) UniversalBlock(resultHeader.size(),
-                                            false, resultHeader.isLastBlock(), resultHeader.previousPhysical());
+    return foundBlock;
 }
 
 template<unsigned int SL_BITS, typename BitfieldType>
-void TLSF<SL_BITS, BitfieldType>::splitBlockToSize(FreeBlockHeader *&blockToSplit, size_t size) {
+typename TLSF<SL_BITS, BitfieldType>::UsedBlockHeader *
+TLSF<SL_BITS, BitfieldType>::changeBlockToUsed(FreeBlockHeader *blockHeader) const {
+    FreeBlockHeader resultHeader = *blockHeader;
+    blockHeader->~FreeBlockHeader();
+    UsedBlockHeader *foundBlock = new(blockHeader) UniversalBlock(resultHeader.size(),
+                                                                  true, resultHeader.isLastBlock(),
+                                                                  resultHeader.previousPhysical());
+    return foundBlock;
+}
+
+template<unsigned int SL_BITS, typename BitfieldType>
+typename TLSF<SL_BITS, BitfieldType>::FreeBlockHeader *
+TLSF<SL_BITS, BitfieldType>::popFromQueue(TLSF::Indexes indexes) {
+    FreeBlockHeader *fetchedBlock = mMetadata.header(indexes);
+    FreeBlockHeader *next = nullptr;
+    if (fetchedBlock != nullptr) {
+        next = fetchedBlock->nextFreeBlock();
+        fetchedBlock->setNextFreeBlock(nullptr);
+    }
+    if (next != nullptr) {
+        next->setPreviousFreeBlock(nullptr);
+    }
+
+    mMetadata.setHeader(indexes, next);
+    updateBitsets(indexes);
+    return fetchedBlock;
+}
+
+template<unsigned int SL_BITS, typename BitfieldType>
+void TLSF<SL_BITS, BitfieldType>::trimBlockToSize(FreeBlockHeader *&blockToSplit, size_t size) {
     assert(size >= MIN_BLOCK_SIZE);
 
     auto originalSize = blockToSplit->size();
@@ -126,20 +182,21 @@ void TLSF<SL_BITS, BitfieldType>::splitBlockToSize(FreeBlockHeader *&blockToSpli
     blockToSplit->setSize(size);
 
     auto indexes = sizeToIndexes(secondBlockSize);
-    FreeBlockHeader *firstHeaderOfNewSize = mMetadata.slForFl(indexes.fli)[indexes.sli];
+    FreeBlockHeader *firstHeaderOfNewSize = mMetadata.header(indexes);
     auto newAllocationArea = static_cast<char *>(blockToSplit->memory()) + blockToSplit->size();
 
-    auto newHeader = new(newAllocationArea) FreeBlockHeader(secondBlockSize, blockToSplit->isLastBlock(),
-                                                            blockToSplit, firstHeaderOfNewSize, nullptr);
+    auto *newHeader = new(newAllocationArea) FreeBlockHeader(secondBlockSize, blockToSplit->isLastBlock(),
+                                                             blockToSplit, firstHeaderOfNewSize, nullptr);
+    blockToSplit->setLastBlockFlag(false);
     firstHeaderOfNewSize->setPreviousFreeBlock(newHeader);
 
-    mMetadata.slForFl(indexes.fli)[indexes.sli] = newHeader;
+    mMetadata.setHeader(indexes, newHeader);
 }
 
 template<unsigned int SL_BITS, typename BitfieldType>
-void TLSF<SL_BITS, BitfieldType>::updateBitsets(const TLSF<SL_BITS, BitfieldType>::Indexes &indexes,
-                                                const TLSF<SL_BITS, BitfieldType>::FreeBlockHeader *nextFreeBlock) const {
-    if (nextFreeBlock == nullptr) {
+void TLSF<SL_BITS, BitfieldType>::updateBitsets(const TLSF<SL_BITS, BitfieldType>::Indexes &indexes) const {
+
+    if (mMetadata.header(indexes) == nullptr) {
         mMetadata.slBitsetForFl(indexes.fli).set(indexes.sli, 0);
         if (mMetadata.slBitsetForFl(indexes.fli).none())
             mMetadata.flBitset().set(indexes.fli, 0);
@@ -150,6 +207,7 @@ template<unsigned int SL_BITS, typename BitfieldType>
 class TLSF<SL_BITS, BitfieldType>::Metadata {
 public:
     using FlIdx = unsigned int;
+    using SlIdx = unsigned int;
 
     Metadata(MemorySpace memoryToManage) :
             mInfo(),
@@ -178,17 +236,21 @@ public:
         return mFlBitset;
     }
 
-    std::bitset<SL_SIZE> &slBitsetForFl(FlIdx FlIdx) {
+    std::bitset<SL_BITS> &slBitsetForFl(FlIdx FlIdx) {
         return mSlBitsets[FlIdx];
+    };
+
+    FreeBlockHeader *header(Indexes indexes) {
+        return mInfo[indexes.fli][indexes.sli];
     }
 
-    std::array<FreeBlockHeader *, SL_SIZE> &slForFl(FlIdx FlIdx) {
-        return mInfo[FlIdx];
-    };
+    void setHeader(Indexes indexes, FreeBlockHeader *header) {
+        mInfo[indexes.fli][indexes.sli] = header;
+    }
 
 private:
     using TwoLevelInfo = std::array<std::array<FreeBlockHeader *, SL_SIZE>, FL_SIZE>;
     TwoLevelInfo mInfo;
     std::bitset<FL_SIZE> mFlBitset;
-    std::array<std::bitset<SL_SIZE>, FL_SIZE> mSlBitsets;
+    std::array<std::bitset<SL_BITS>, FL_SIZE> mSlBitsets;
 };

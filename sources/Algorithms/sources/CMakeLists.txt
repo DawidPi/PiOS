@@ -25,8 +25,8 @@ set(SOURCES
         TLSFImpl.hpp
         TLSF.hpp
         DynamicAllocator.hpp
-        MsbLsbCalculator.hpp
-        BitSliceCalculator.cpp
-        BitSliceCalculator.hpp)
+        MsbLsb.hpp
+        BitSlice.cpp
+        BitSlice.hpp)
 
 add_library(${PROJECT_NAME} ${SOURCES})

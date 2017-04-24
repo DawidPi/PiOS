@@ -11,7 +11,7 @@
 #include <climits>
 #include "DynamicAllocator.hpp"
 #include "power.hpp"
-#include "MsbLsbCalculator.hpp"
+#include "MsbLsb.hpp"
 
 namespace PiOS {
     /*!
@@ -21,7 +21,7 @@ namespace PiOS {
     template<unsigned int SL_BITS = 3, typename BitfieldType = uint32_t>
     class TLSF : public DynamicAllocator {
         constexpr static unsigned int roundBlockSize(unsigned int size) {
-            MsbLsbCalculator msbCalc;
+            MsbLsb msbCalc;
             auto idx = msbCalc.calculateMSB(size);
             idx = std::max(idx, 0);
             if (static_cast<unsigned int>(1 << idx) == size)
@@ -65,7 +65,8 @@ namespace PiOS {
             FreeBlockHeader *mNext;
             FreeBlockHeader *mPrevious;
         public:
-            FreeBlockHeader(size_t blockSize, bool isLast, UniversalBlock *previousPhysBlock, FreeBlockHeader *next,
+            FreeBlockHeader(std::size_t blockSize, bool isLast, UniversalBlock *previousPhysBlock,
+                            FreeBlockHeader *next,
                             FreeBlockHeader *previous) :
                     UniversalBlock(blockSize, false, isLast, previousPhysBlock),
                     mNext(next),
@@ -81,20 +82,18 @@ namespace PiOS {
 
         };
 
-        class UsedBlockHeader : public UniversalBlock {
-            using UniversalBlock::UniversalBlock;
-        };
+        using UsedBlockHeader = UniversalBlock;
 
-        static constexpr unsigned int FL_SIZE = CHAR_BIT * sizeof(BitfieldType);
-        static constexpr unsigned int SL_SIZE = pow(2, SL_BITS);
-        static constexpr unsigned int MIN_BLOCK_SIZE = roundBlockSize(sizeof(FreeBlockHeader));
-        static constexpr unsigned int MIN_BLOCK_SIZE_POW = MsbLsbCalculator().calculateMSB(MIN_BLOCK_SIZE);
+        static constexpr std::size_t FL_SIZE = CHAR_BIT * sizeof(BitfieldType);
+        static constexpr std::size_t SL_SIZE = pow(2, SL_BITS);
+        static constexpr std::size_t MIN_BLOCK_SIZE = roundBlockSize(sizeof(FreeBlockHeader));
+        static constexpr std::size_t MIN_BLOCK_SIZE_POW = MsbLsb().calculateMSB(MIN_BLOCK_SIZE);
         static_assert(sizeof(FreeBlockHeader) <= MIN_BLOCK_SIZE,
                       "sizeOf FreeBlockHeader must be smaller or equal MIN_BLOCK_SIZE");
     public:
         TLSF(MemorySpace memoryToManage);
 
-        MemorySpace allocate(size_t size) override;
+        MemorySpace allocate(std::size_t size) override;
 
         void deallocate(void *spaceBegin) override;
 
@@ -111,23 +110,31 @@ namespace PiOS {
             BitfieldType sli;
         };
 
-        static size_t indexesToSize(Indexes);
+        static std::size_t indexesToSize(Indexes);
 
-        static Indexes sizeToIndexes(size_t size);
+        static Indexes sizeToIndexes(std::size_t size);
 
-        size_t availableFreeMemory();
+        std::size_t availableFreeMemory();
 
         bool isBlockAvailable(Indexes indexes);
 
-        UniversalBlock &fetchHeader(Indexes indexes, size_t trimSize);
+        UniversalBlock *fetchHeader(Indexes indexes, std::size_t trimSize);
 
-        Indexes findSuitableExistingBlock(Indexes preferableIndexes);
+        Indexes findSuitableExistingBlock(size_t size);
 
-        size_t adjustSize(size_t size) const;
+        void adjustSize(std::size_t &size) const;
 
-        void updateBitsets(const Indexes &indexes, const FreeBlockHeader *nextFreeBlock) const;
+        void updateBitsets(const TLSF<SL_BITS, BitfieldType>::Indexes &indexes) const;
 
-        void splitBlockToSize(FreeBlockHeader *&blockToSplit, size_t size);
+        void trimBlockToSize(FreeBlockHeader *&blockToSplit, std::size_t size);
+
+        FreeBlockHeader *popFromQueue(Indexes indexes);
+
+        UsedBlockHeader *changeBlockToUsed(FreeBlockHeader *blockHeader) const;
+
+        std::bitset<SL_BITS> findSliInCurrentFli(Indexes indexes) const;
+
+        Indexes findNextFreeBlocks(Indexes indexes);
     };
 }
 

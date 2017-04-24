@@ -4,23 +4,22 @@
 
 #include <limits>
 #include <cassert>
-#include "BitSliceCalculator.hpp"
-#include "MsbLsbCalculator.hpp"
+#include "BitSlice.hpp"
+#include "MsbLsb.hpp"
 
-uint32_t PiOS::BitSliceCalculator::calculate(uint32_t value, unsigned int begin, unsigned int end) {
-    constexpr unsigned int maxBits = 32;
+std::size_t PiOS::BitSlice::calculate(std::size_t value, unsigned int begin, unsigned int end) {
     assert(begin <= end);
     assert(begin <= maxBits);
     assert(end <= maxBits);
 
-    std::bitset<maxBits> allBitsSet(std::numeric_limits<uint32_t>::max());
+    std::bitset<maxBits> allBitsSet(std::numeric_limits<std::size_t>::max());
     std::bitset<maxBits> mask = (allBitsSet >> (maxBits - end)) ^(allBitsSet >> (maxBits - begin));
 
     std::bitset<maxBits> bitsetValue(value);
     auto maskedValue = bitsetValue & mask;
-    MsbLsbCalculator lsbCalculator;
+    MsbLsb lsbCalculator;
     auto lsbIdx = lsbCalculator.calculateLSB(maskedValue);
     auto result = maskedValue >> lsbIdx;
 
-    return result.to_ulong();
+    return result.to_ullong();
 }

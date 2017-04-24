@@ -40,12 +40,12 @@ namespace PiOS {
          * \brief Gives information about the size of managed memory in bytes.
          * @return Memory size in bytes.
          */
-        size_t size() { return mSize; }
+        std::size_t size() { return mSize; }
 
     private:
         void *mBegin;
         void *mEnd;
-        size_t mSize;
+        std::size_t mSize;
     };
 
 
@@ -57,7 +57,7 @@ namespace PiOS {
          * \return information about allocated memory.
          * AllocatedSpace contains null info if allocation could not be performed
          */
-        virtual MemorySpace allocate(size_t size)=0;
+        virtual MemorySpace allocate(std::size_t size)=0;
 
         /*!
          * \brief Deallocates given space in memory. Does nothing if space is already deallocated.

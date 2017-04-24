@@ -7,13 +7,16 @@
 
 #include <cstdint>
 #include <bitset>
+#include <climits>
 
 namespace PiOS {
     /*!
      * \brief Calculates the value of the slice of bits of the given value.
      */
-    class BitSliceCalculator {
+    class BitSlice {
     public:
+        using MaxType = std::size_t;
+        static constexpr std::size_t maxBits = CHAR_BIT * sizeof(MaxType);
         /*!
          * \brief Calculates value of the bits slice.
          *
@@ -22,7 +25,7 @@ namespace PiOS {
          * @param end Ending index of the slice. Must be <= 32 and >= begin.
          * @return Calculated value
          */
-        uint32_t calculate(uint32_t value, unsigned int begin, unsigned int end);
+        std::size_t calculate(std::size_t value, unsigned int begin, unsigned int end);
 
         /*!
          * \brief Calculates value of the bits slice.
@@ -32,8 +35,9 @@ namespace PiOS {
          * @param end Ending index of the slice. Must be <= 32 and >= begin.
          * @return Calculated value
          */
-        std::bitset<32> calculate(std::bitset<32> value, unsigned int begin, unsigned int end) {
-            return calculate(value.to_ulong(), begin, end);
+        template<std::size_t BITS>
+        std::bitset<BITS> calculate(std::bitset<BITS> value, unsigned int begin, unsigned int end) {
+            return calculate(value.to_ullong(), begin, end);
         }
     };
 }

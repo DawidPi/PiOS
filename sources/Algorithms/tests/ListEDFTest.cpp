@@ -147,7 +147,7 @@ TEST_F(ListEDFTest, unreleasedTasks) {
     EDF.fetchNextTask().job()();
     ASSERT_TRUE(backgroundFlag);
 
-    std::array<size_t, 7> expectedSequence{4, 0, 6, 1, 3, 2, 5};
+    std::array<std::size_t, 7> expectedSequence{4, 0, 6, 1, 3, 2, 5};
     for (auto &expectedIdx : expectedSequence) {
         EDF.finishPendingTask();
         auto newCurrentTime = std::max(currentTime, releasesTimes[expectedIdx].first);

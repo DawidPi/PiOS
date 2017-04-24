@@ -3,17 +3,17 @@
 //
 
 #include <gtest/gtest.h>
-#include <BitSliceCalculator.hpp>
+#include <BitSlice.hpp>
 
 using namespace PiOS;
 
-class BitSliceCalculatorTest : public ::testing::Test {
+class BitSliceTest : public ::testing::Test {
 public:
 
 };
 
-TEST_F(BitSliceCalculatorTest, validOutputTest) {
-    BitSliceCalculator calculator;
+TEST_F(BitSliceTest, validOutputTest) {
+    BitSlice calculator;
 
     for (auto value : {(uint32_t) 0, (uint32_t) 47, std::numeric_limits<uint32_t>::max()}) {
         auto output = calculator.calculate(value, 0, 32);
@@ -36,8 +36,8 @@ TEST_F(BitSliceCalculatorTest, validOutputTest) {
     }
 }
 
-TEST_F(BitSliceCalculatorTest, cornerCaseTests) {
-    BitSliceCalculator calculator;
+TEST_F(BitSliceTest, cornerCaseTests) {
+    BitSlice calculator;
 
     uint32_t value = 0b111u;
     std::bitset<32> bitsetValue(value);

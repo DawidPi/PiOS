@@ -10,12 +10,12 @@ using namespace std::literals;
 
 class SimpleBuddyTest : public ::testing::Test {
 public:
-    const size_t binaryTreeElements = PiOS::pow(2,4)-1;
-    const size_t memorySize = 1024;
+    const std::size_t binaryTreeElements = PiOS::pow(2, 4) - 1;
+    const std::size_t memorySize = 1024;
     void* managedMemory = operator new (memorySize);
     SimpleBuddyTest() :
     mSimpleBuddy{SimpleBuddyFactory().create(
-            new size_t[binaryTreeElements], binaryTreeElements,
+            new std::size_t[binaryTreeElements], binaryTreeElements,
             managedMemory, memorySize)} {}
 
     SimpleBuddyTest(const SimpleBuddyTest& rhs) = delete;
@@ -23,10 +23,10 @@ public:
 
     SimpleBuddy mSimpleBuddy;
     std::array<void *, 4> mAllocatedPtrs{{nullptr, nullptr, nullptr, nullptr}};
-    std::array<size_t, 4> mAllocationSizes{{1, 128, 256, 512}};
+    std::array<std::size_t, 4> mAllocationSizes{{1, 128, 256, 512}};
 
     void allocateAllSpace() {
-        for (size_t elementIdx = 0; elementIdx < mAllocationSizes.size(); ++elementIdx) {
+        for (std::size_t elementIdx = 0; elementIdx < mAllocationSizes.size(); ++elementIdx) {
             const auto allocationSize = mAllocationSizes[elementIdx];
             mAllocatedPtrs[elementIdx] = mSimpleBuddy.allocate(allocationSize).begin();
         }
@@ -82,7 +82,7 @@ TEST_F(SimpleBuddyTest, SimpleBuddy_deallocation) {
 
     mSimpleBuddy.deallocate(nullptr);
 
-    for(size_t allocationNo=0; allocationNo < mAllocatedPtrs.size(); ++allocationNo){
+    for (std::size_t allocationNo = 0; allocationNo < mAllocatedPtrs.size(); ++allocationNo) {
         mSimpleBuddy.deallocate(mAllocatedPtrs[allocationNo]);
         auto allocatedSpace = mSimpleBuddy.allocate(mAllocationSizes[allocationNo]);
         EXPECT_EQ(allocatedSpace.begin(), mAllocatedPtrs[allocationNo]);
@@ -90,7 +90,7 @@ TEST_F(SimpleBuddyTest, SimpleBuddy_deallocation) {
     ASSERT_EQ(mSimpleBuddy.allocate(1).begin(), nullptr);
 
     //only crash test
-    for (size_t allocationNo = 0; allocationNo < mAllocatedPtrs.size(); ++allocationNo) {
+    for (std::size_t allocationNo = 0; allocationNo < mAllocatedPtrs.size(); ++allocationNo) {
         mSimpleBuddy.deallocate(mAllocatedPtrs[allocationNo]);
     }
 

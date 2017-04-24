@@ -39,7 +39,7 @@ namespace PiOS {
          * \brief Creates NodeId with given absolute index of the node in the array.
          * @param absoluteIndex Abosulte index of node in the array.
          */
-        explicit NodeId(size_t absoluteIndex) : mAbsoluteIndex(absoluteIndex) {
+        explicit NodeId(std::size_t absoluteIndex) : mAbsoluteIndex(absoluteIndex) {
             auto invalidValue = std::numeric_limits<decltype(absoluteIndex)>::max();
             if (absoluteIndex == invalidValue)
                 return;
@@ -80,7 +80,7 @@ namespace PiOS {
          * \brief Allows to get absolute index of the node in the array, that @ref FixedSizeBinaryTree uses
          * @return index of the Node in binary tree.
          */
-        size_t absoluteIndex() const;
+        std::size_t absoluteIndex() const;
 
         /*!
          * \brief Checks whether Node is valid.
@@ -97,12 +97,13 @@ namespace PiOS {
     private:
         RankType mRank = std::numeric_limits<RankType>::max();
         RankType mIndexInRank = std::numeric_limits<RankType>::max();
-        size_t mAbsoluteIndex = std::numeric_limits<size_t>::max();
+        std::size_t mAbsoluteIndex = std::numeric_limits<std::size_t>::max();
 
         void updateRank();
 
         void updateAbsoluteIdx();
-        size_t calculateRankOffset() const;
+
+        std::size_t calculateRankOffset() const;
     };
 
     /*!
@@ -124,7 +125,7 @@ namespace PiOS {
          * @param elementsInSpace Length of memory block pointed by  managedSpace
          * @param defaultValue Initial value of all nodes in binary tree.
          */
-        explicit FixedSizeBinaryTree(T *managedSpace, size_t elementsInSpace, const T &defaultValue = T());
+        explicit FixedSizeBinaryTree(T *managedSpace, std::size_t elementsInSpace, const T &defaultValue = T());
 
         /*!
          * \brief Deleted copy c'tor, because 2 objects cannot manage same resource
@@ -211,11 +212,11 @@ namespace PiOS {
     private:
         Depth mDepth;
         T *const mManagedSpace;
-        size_t mElementsInSpace;
+        std::size_t mElementsInSpace;
 
         bool isNodeValid(NodeId node) const;
 
-        NodeId::RankType calculateDepth(size_t size);
+        NodeId::RankType calculateDepth(std::size_t size);
     };
 
 }
