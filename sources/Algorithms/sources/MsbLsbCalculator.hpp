@@ -17,6 +17,29 @@ namespace PiOS {
      * for lookUp table.
      */
     class MsbLsbCalculator {
+        template<size_t SIZE>
+        class MSBLookUp {
+        public:
+            constexpr MSBLookUp() :
+                    mLookUpVals() {
+                mLookUpVals[0] = -1;
+                for (size_t idx = 1; idx < SIZE; ++idx) {
+                    unsigned int msb = 0;
+                    size_t cpIdx = idx;
+                    while (cpIdx >>= 1) msb++;
+                    mLookUpVals[idx] = msb;
+                }
+            }
+
+            constexpr int operator[](size_t idx) const {
+                return mLookUpVals[idx];
+            }
+
+            constexpr size_t size() const { return SIZE; }
+
+        private:
+            int mLookUpVals[SIZE];
+        };
     public:
         /*!
          * \brief Calculates index of MSB set in given value.
@@ -30,7 +53,8 @@ namespace PiOS {
                 value >>= 8;
             }
 
-            return mLookUp[value] + bitsMoved;
+            constexpr MSBLookUp<256> LUT;
+            return LUT[value] + bitsMoved;
         }
 
         /*!
@@ -38,49 +62,31 @@ namespace PiOS {
          * @param value Bitset of which set MSB index is to be calculated.
          * @return Index of calculated MSB.
          */
-        constexpr int calculateMSB(std::bitset<32> value) const { return calculateMSB(value.to_ulong()); }
+        template<unsigned int BITS>
+        constexpr int calculateMSB(std::bitset<BITS> value) const {
+            static_assert(BITS <= sizeof(uint32_t) * std::numeric_limits<unsigned char>::digits,
+                          "bitset is too big. At most 32 bits value is allowed");
+            return calculateMSB(value.to_ulong());
+        }
 
         /*!
          * \brief Calculates index of LSB set in given value.
          * @param value Value of which set MSB index is to be calculated.
          * @return Index of calculated LSB.
          */
-        int calculateLSB(uint32_t value) const { return calculateMSB(value & -value); }
+        constexpr int calculateLSB(uint32_t value) const { return calculateMSB(value & -value); }
 
         /*!
          * \brief Calculates index of LSB set in given value.
          * @param value Bitset of which set LSB index is to be calculated.
          * @return Index of calculated LSB.
          */
-        int calculateLSB(std::bitset<32> value) const { return calculateMSB(value.to_ulong() & -value.to_ulong()); }
-
-    private:
-
-        template<size_t SIZE>
-        class MSBLookUp {
-        public:
-            constexpr MSBLookUp() :
-                    mLookUpVals() {
-                mLookUpVals[0] = -1;
-                for (size_t idx = 1; idx < mLookUpVals.size(); ++idx) {
-                    unsigned int msb = 0;
-                    size_t cpIdx = idx;
-                    while (cpIdx >>= 1) msb++;
-                    mLookUpVals[idx] = msb;
-                }
-            }
-
-            constexpr int operator[](size_t idx) const {
-                return mLookUpVals[idx];
-            }
-
-            constexpr size_t size() const { return mLookUpVals.size(); }
-
-        private:
-            std::array<int, SIZE> mLookUpVals;
-        };
-
-        static constexpr auto mLookUp = MSBLookUp<256>();
+        template<unsigned int BITS>
+        constexpr int calculateLSB(std::bitset<BITS> value) const {
+            static_assert(BITS <= sizeof(uint32_t) * std::numeric_limits<unsigned char>::digits,
+                          "bitset is too big. At most 32 bits value is allowed");
+            return calculateMSB(value.to_ulong() & -value.to_ulong());
+        }
     };
 }
 

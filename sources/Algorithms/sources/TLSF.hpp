@@ -34,6 +34,10 @@ namespace PiOS {
             size_t mSize;
             UniversalBlock *mPreviousBlock;
         public:
+            UniversalBlock(size_t blockSize, bool isUsed, bool isLast, UniversalBlock *previousBlock)
+                    : mSize((blockSize << 2) | (isUsed << 1) | isLast),
+                      mPreviousBlock(previousBlock) {}
+
             size_t size() const { return (std::bitset<32>(mSize) >> 2).to_ulong(); }
 
             void setSize(size_t size) { mSize = (size << 2) | (mSize & 0b11u); }
@@ -54,13 +58,19 @@ namespace PiOS {
 
             void setUsedFlag(bool flagValue) { mSize = std::bitset<32>(mSize).set(1, flagValue).to_ulong(); }
 
-            void *memory() { return static_cast<char *>(this) + sizeof(*this); }
+            void *memory() { return reinterpret_cast<char *>(this) + sizeof(*this); }
         };
 
         class FreeBlockHeader : public UniversalBlock {
             FreeBlockHeader *mNext;
             FreeBlockHeader *mPrevious;
         public:
+            FreeBlockHeader(size_t blockSize, bool isLast, UniversalBlock *previousPhysBlock, FreeBlockHeader *next,
+                            FreeBlockHeader *previous) :
+                    UniversalBlock(blockSize, false, isLast, previousPhysBlock),
+                    mNext(next),
+                    mPrevious(previous) {}
+
             FreeBlockHeader *nextFreeBlock() const { return mNext; }
 
             void setNextFreeBlock(FreeBlockHeader *freeBlock) { mNext = freeBlock; }
@@ -68,9 +78,11 @@ namespace PiOS {
             FreeBlockHeader *previousFreeBlock() const { return mPrevious; }
 
             void setPreviousFreeBlock(FreeBlockHeader *freeBlock) { mPrevious = freeBlock; }
+
         };
 
         class UsedBlockHeader : public UniversalBlock {
+            using UniversalBlock::UniversalBlock;
         };
 
         static constexpr unsigned int FL_SIZE = CHAR_BIT * sizeof(BitfieldType);
@@ -105,9 +117,17 @@ namespace PiOS {
 
         size_t availableFreeMemory();
 
-        bool isAvailable(Indexes indexes);
+        bool isBlockAvailable(Indexes indexes);
 
-        FreeBlockHeader *fetchHeader(Indexes indexes);
+        UniversalBlock &fetchHeader(Indexes indexes, size_t trimSize);
+
+        Indexes findSuitableExistingBlock(Indexes preferableIndexes);
+
+        size_t adjustSize(size_t size) const;
+
+        void updateBitsets(const Indexes &indexes, const FreeBlockHeader *nextFreeBlock) const;
+
+        void splitBlockToSize(FreeBlockHeader *&blockToSplit, size_t size);
     };
 }
 

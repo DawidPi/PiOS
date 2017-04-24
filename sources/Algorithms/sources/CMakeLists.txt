@@ -25,7 +25,6 @@ set(SOURCES
         TLSFImpl.hpp
         TLSF.hpp
         DynamicAllocator.hpp
-        MsbLsbCalculator.cpp
         MsbLsbCalculator.hpp
         BitSliceCalculator.cpp
         BitSliceCalculator.hpp)
