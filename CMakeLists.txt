@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.6)
+cmake_minimum_required(VERSION 3.2.2)
 include(CMake/doxygen.cmake)
 
 set(VERSION_MAJOR 0 CACHE STRING "Project major version number.")
