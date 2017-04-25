@@ -249,7 +249,7 @@ namespace PiOS {
     }
 
     ptrdiff_t SimpleBuddy::ptrDiff(const void *ptr1, const void *ptr2) {
-        return static_cast<const char *>(ptr1) - static_cast<const char *>(ptr2);
+        return static_cast<ptrdiff_t>(static_cast<const char *>(ptr1) - static_cast<const char *>(ptr2));
     }
 
     void SimpleBuddy::destroyNode(NodeId node) {

@@ -17,9 +17,47 @@ namespace PiOS {
     /*!
      * \brief Implementation of Two Level Segregate Fit algorithm for dynamic
      * memory allocation and deallocation.
+     *
+     * Implementation assures constant time allocation and deallocation.
+     *
+     * \tparam SL_BITS bits, that are to be taken, when calculating SL IDX
+     * \tparam type of integer, that is big enough to capture size of the biggest managed block.
      */
-    template<unsigned int SL_BITS = 3, typename BitfieldType = uint32_t>
+    template<unsigned int SL_BITS = 3, typename BitfieldType = std::size_t>
     class TLSF : public DynamicAllocator {
+    public:
+        /*!
+         * \brief Constructor.
+         *
+         * Initializes TLSF algorithm with amount of managed memory.
+         *
+         * \param memoryToManage MemorySpace representing managed memory heap.
+         */
+        TLSF(MemorySpace memoryToManage);
+
+        /*!
+         * \brief Allocates chunk of memory, which is no smaller than provided memory size.
+         *
+         * \param size Optimal size of memory to be allocated.
+         *
+         * If size if 0 or allocation cannot be performed, then nullptr MemorySpace is provided.
+         *
+         * \return MemorySpace representing block of allocated memory.
+         */
+        MemorySpace allocate(std::size_t size) override;
+
+        /*!
+         * \brief Deallocates chunk of memory previously allocated using \ref allocate method.
+         * \param spaceBegin beginning of the space, that was previously allocated.
+         *
+         * If spaceBegin is nullptr, then method immediatelly returns.
+         */
+        void deallocate(void *spaceBegin) override;
+
+    private:
+        static constexpr std::size_t FL_SIZE = CHAR_BIT * sizeof(BitfieldType);
+        static constexpr std::size_t SL_SIZE = pow(2, SL_BITS);
+
         constexpr static unsigned int roundBlockSize(unsigned int size) {
             MsbLsb msbCalc;
             auto idx = msbCalc.calculateMSB(size);
@@ -30,74 +68,15 @@ namespace PiOS {
             return static_cast<unsigned int>(1 << (idx + 1));
         }
 
-        class UniversalBlock {
-            size_t mSize;
-            UniversalBlock *mPreviousBlock;
-        public:
-            UniversalBlock(size_t blockSize, bool isUsed, bool isLast, UniversalBlock *previousBlock)
-                    : mSize((blockSize << 2) | (isUsed << 1) | isLast),
-                      mPreviousBlock(previousBlock) {}
-
-            size_t size() const { return (std::bitset<32>(mSize) >> 2).to_ulong(); }
-
-            void setSize(size_t size) { mSize = (size << 2) | (mSize & 0b11u); }
-
-            UniversalBlock *previousPhysical() const { return mPreviousBlock; }
-
-            void setPreviousPhysical(UniversalBlock *block) { mPreviousBlock = block; }
-
-            UniversalBlock *nextPhysical() const {
-                return static_cast<UniversalBlock *>(static_cast<char *>(this) + size());
-            }
-
-            bool isLastBlock() const { return static_cast<bool>((mSize & 1u)); }
-
-            void setLastBlockFlag(bool flagValue) { mSize = std::bitset<32>(mSize).set(0, flagValue).to_ulong(); }
-
-            bool isUsed() const { return (mSize & 0b10u) != 0u; }
-
-            void setUsedFlag(bool flagValue) { mSize = std::bitset<32>(mSize).set(1, flagValue).to_ulong(); }
-
-            void *memory() { return reinterpret_cast<char *>(this) + sizeof(*this); }
-        };
-
-        class FreeBlockHeader : public UniversalBlock {
-            FreeBlockHeader *mNext;
-            FreeBlockHeader *mPrevious;
-        public:
-            FreeBlockHeader(std::size_t blockSize, bool isLast, UniversalBlock *previousPhysBlock,
-                            FreeBlockHeader *next,
-                            FreeBlockHeader *previous) :
-                    UniversalBlock(blockSize, false, isLast, previousPhysBlock),
-                    mNext(next),
-                    mPrevious(previous) {}
-
-            FreeBlockHeader *nextFreeBlock() const { return mNext; }
-
-            void setNextFreeBlock(FreeBlockHeader *freeBlock) { mNext = freeBlock; }
-
-            FreeBlockHeader *previousFreeBlock() const { return mPrevious; }
-
-            void setPreviousFreeBlock(FreeBlockHeader *freeBlock) { mPrevious = freeBlock; }
-
-        };
-
+        class UniversalBlock;
         using UsedBlockHeader = UniversalBlock;
 
-        static constexpr std::size_t FL_SIZE = CHAR_BIT * sizeof(BitfieldType);
-        static constexpr std::size_t SL_SIZE = pow(2, SL_BITS);
+        class FreeBlockHeader;
+
         static constexpr std::size_t MIN_BLOCK_SIZE = roundBlockSize(sizeof(FreeBlockHeader));
-        static constexpr std::size_t MIN_BLOCK_SIZE_POW = MsbLsb().calculateMSB(MIN_BLOCK_SIZE);
         static_assert(sizeof(FreeBlockHeader) <= MIN_BLOCK_SIZE,
                       "sizeOf FreeBlockHeader must be smaller or equal MIN_BLOCK_SIZE");
-    public:
-        TLSF(MemorySpace memoryToManage);
 
-        MemorySpace allocate(std::size_t size) override;
-
-        void deallocate(void *spaceBegin) override;
-
-    private:
         class Metadata;
 
         Metadata &mMetadata;
@@ -111,30 +90,34 @@ namespace PiOS {
         };
 
         static std::size_t indexesToSize(Indexes);
-
         static Indexes sizeToIndexes(std::size_t size);
-
         std::size_t availableFreeMemory();
 
-        bool isBlockAvailable(Indexes indexes);
-
         UniversalBlock *fetchHeader(Indexes indexes, std::size_t trimSize);
-
         Indexes findSuitableExistingBlock(size_t size);
-
         void adjustSize(std::size_t &size) const;
-
         void updateBitsets(const TLSF<SL_BITS, BitfieldType>::Indexes &indexes) const;
 
-        void trimBlockToSize(FreeBlockHeader *&blockToSplit, std::size_t size);
+        void trimBlockToSize(FreeBlockHeader *&blockToSplit, std::size_t trimSize);
 
         FreeBlockHeader *popFromQueue(Indexes indexes);
-
         UsedBlockHeader *changeBlockToUsed(FreeBlockHeader *blockHeader) const;
 
-        std::bitset<SL_BITS> findSliInCurrentFli(Indexes indexes) const;
-
+        std::bitset<SL_SIZE> findSliInCurrentFli(Indexes indexes) const;
         Indexes findNextFreeBlocks(Indexes indexes);
+
+        void
+        createNewFreeHeader(char *blockBegin, size_t sizeOfNewBlock, bool isLast, UniversalBlock *previousPhysical);
+
+        UsedBlockHeader *findUsedBlock(void *space);
+
+        UsedBlockHeader *concatenateAdjacentBlocks(UsedBlockHeader *centerBlock);
+
+        bool isMergeable(const UniversalBlock *previousBlock) const;
+
+        void mergeTwoBlocks(UsedBlockHeader *&centerBlock, FreeBlockHeader *otherBlock);
+
+        void removeFromQueue(const FreeBlockHeader *blockToRemove) const;
     };
 }
 

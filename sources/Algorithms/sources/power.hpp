@@ -18,6 +18,7 @@ namespace PiOS {
      * @return Base raised to the power of exponent.
      */
     constexpr std::size_t pow(std::size_t base, unsigned int exponent) {
+        //todo add tests
         return exponent == 0 ? 1 : base * pow(base, exponent - 1);
     }
 

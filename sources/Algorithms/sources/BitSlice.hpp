@@ -37,7 +37,7 @@ namespace PiOS {
          */
         template<std::size_t BITS>
         std::bitset<BITS> calculate(std::bitset<BITS> value, unsigned int begin, unsigned int end) {
-            return calculate(value.to_ullong(), begin, end);
+            return calculate(static_cast<std::size_t>(value.to_ullong()), begin, end);
         }
     };
 }
