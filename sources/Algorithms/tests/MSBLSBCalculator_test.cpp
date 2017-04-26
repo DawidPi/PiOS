@@ -26,11 +26,11 @@ TEST_F(MsbLsbTest, MSBForInteger) {
         ASSERT_EQ(calculator.calculateMSB(value), msb(value));
     }
 
-    for (; value < 0xffff - 200; value += 200) {
+    for (; value < 0xffff - 2000; value += 2000) {
         ASSERT_EQ(calculator.calculateMSB(value), msb(value));
     }
 
-    for (; value < 0xffffffff - 1000; value += 1000) {
+    for (; value < 0xffffffff - 10000; value += 10000) {
         ASSERT_EQ(calculator.calculateMSB(value), msb(value));
     }
 }

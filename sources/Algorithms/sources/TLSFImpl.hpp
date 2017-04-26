@@ -13,7 +13,9 @@ template<unsigned int SL_BITS, typename BitfieldType>
 TLSF<SL_BITS, BitfieldType>::TLSF(MemorySpace memoryToManage) :
         mMetadata(*new(memoryToManage.begin()) Metadata(
                 MemorySpace(static_cast<char *>(memoryToManage.begin()) + sizeof(Metadata), memoryToManage.end()))),
-        mManagedMemorySpace(memoryToManage) {}
+        mManagedMemorySpace(memoryToManage) {
+    assert(memoryToManage.size() > sizeof(Metadata) + sizeof(FreeBlockHeader));
+}
 
 template<unsigned int SL_BITS, typename BitfieldType>
 MemorySpace TLSF<SL_BITS, BitfieldType>::allocate(std::size_t size) {
@@ -28,6 +30,7 @@ MemorySpace TLSF<SL_BITS, BitfieldType>::allocate(std::size_t size) {
     assert(freeBlockHeader != nullptr);
     assert(freeBlockHeader->isUsed());
     assert(freeBlockHeader->size() >= size);
+    assert(freeBlockHeader->nextPhysical()->previousPhysical() == freeBlockHeader);
 
     return MemorySpace(freeBlockHeader->memory(),
                        static_cast<char *>(freeBlockHeader->memory()) + freeBlockHeader->size());
@@ -78,10 +81,11 @@ TLSF<SL_BITS, BitfieldType>::findNextFreeBlocks(TLSF::Indexes indexes) {
 template<unsigned int SL_BITS, typename BitfieldType>
 std::bitset<TLSF<SL_BITS, BitfieldType>::SL_SIZE>
 TLSF<SL_BITS, BitfieldType>::findSliInCurrentFli(Indexes indexes) const {
+    assert(indexes.sli < SL_SIZE);
+
     auto sliBitset = mMetadata.slBitset(indexes.fli);
-    auto sliIndex = MsbLsb().calculateLSB(sliBitset);
     const auto allOnesSli = ~std::bitset<SL_SIZE>();
-    auto mask = ~(allOnesSli >> (SL_BITS - (sliIndex + 1)));
+    auto mask = ~(allOnesSli >> (SL_SIZE - (indexes.sli + 1)));
 
     return sliBitset & mask;
 }
@@ -194,7 +198,7 @@ void TLSF<SL_BITS, BitfieldType>::trimBlockToSize(FreeBlockHeader *&blockToSplit
     blockToSplit->setSize(trimSize);
 
     auto newAllocationArea = static_cast<char *>(blockToSplit->memory()) + blockToSplit->size();
-    createNewFreeHeader(newAllocationArea, secondBlockSize, blockToSplit->isLastBlock(), nullptr);
+    createNewFreeHeader(newAllocationArea, secondBlockSize, blockToSplit->isLastBlock(), blockToSplit);
 
     blockToSplit->setLastBlockFlag(false);
 }
@@ -243,7 +247,7 @@ TLSF<SL_BITS, BitfieldType>::concatenateAdjacentBlocks(UsedBlockHeader *centerBl
 
     if (isMergeable(previousBlock))
         mergeTwoBlocks(centerBlock, reinterpret_cast<FreeBlockHeader *>(previousBlock));
-    if (isMergeable(nextBlock))
+    if (not centerBlock->isLastBlock() and isMergeable(nextBlock))
         mergeTwoBlocks(centerBlock, reinterpret_cast<FreeBlockHeader *>(nextBlock));
 
     return centerBlock;
@@ -282,13 +286,13 @@ TLSF<SL_BITS, BitfieldType>::removeFromQueue(const TLSF<SL_BITS, BitfieldType>::
 }
 
 template<unsigned int SL_BITS, typename BitfieldType>
-bool TLSF<SL_BITS, BitfieldType>::isMergeable(const TLSF<SL_BITS, BitfieldType>::UniversalBlock *previousBlock) const {
-    return previousBlock != nullptr and not previousBlock->isUsed();
+bool TLSF<SL_BITS, BitfieldType>::isMergeable(const TLSF<SL_BITS, BitfieldType>::UniversalBlock *memoryBlock) const {
+    return memoryBlock != nullptr and not memoryBlock->isUsed();
 }
 
 template<unsigned int SL_BITS, typename BitfieldType>
 class TLSF<SL_BITS, BitfieldType>::UniversalBlock {
-    size_t mSize;
+    std::size_t mSize;
     UniversalBlock *mPreviousBlock;
 public:
     UniversalBlock(size_t blockSize, bool isUsed, bool isLast, UniversalBlock *previousBlock)
@@ -346,7 +350,7 @@ public:
             mInfo(),
             mFlBitset(),
             mSlBitsets() {
-        auto memorySize = static_cast<char *>(memoryToManage.end()) - static_cast<char *>(memoryToManage.begin());
+        auto memorySize = memoryToManage.size();
         auto indexes = sizeToIndexes(memorySize);
         mFlBitset.set(indexes.fli);
         mSlBitsets[indexes.fli].set(indexes.sli);

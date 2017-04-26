@@ -49,3 +49,16 @@ TEST_F(BitSliceTest, cornerCaseTests) {
     bitsetValue.set(31);
     ASSERT_EQ(calculator.calculate(bitsetValue, 31, 32), 1u);
 }
+
+TEST_F(BitSliceTest, FliSliCalculation) {
+    auto fli = 6;
+
+    std::bitset<32> bitset;
+    bitset.set(fli);
+    bitset.set(fli - 1);
+
+    BitSlice calculator;
+    auto value = calculator.calculate(bitset.to_ulong(), fli - 3, fli);
+    ASSERT_EQ(value, 0b100);
+
+}

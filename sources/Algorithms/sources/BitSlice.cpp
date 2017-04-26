@@ -17,9 +17,7 @@ std::size_t PiOS::BitSlice::calculate(std::size_t value, unsigned int begin, uns
 
     std::bitset<maxBits> bitsetValue(value);
     auto maskedValue = bitsetValue & mask;
-    MsbLsb lsbCalculator;
-    auto lsbIdx = lsbCalculator.calculateLSB(maskedValue);
-    auto result = maskedValue >> lsbIdx;
+    auto result = maskedValue >> begin;
 
     return static_cast<std::size_t>(result.to_ullong());
 }

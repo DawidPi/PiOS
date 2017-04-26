@@ -54,6 +54,11 @@ namespace PiOS {
          */
         void deallocate(void *spaceBegin) override;
 
+        /*!
+         * Allows to find minimum fragmentation size required to store metadata.
+         * @return sizeof(Metadata)
+         */
+        static constexpr std::size_t metadataSize() { return sizeof(Metadata); }
     private:
         static constexpr std::size_t FL_SIZE = CHAR_BIT * sizeof(BitfieldType);
         static constexpr std::size_t SL_SIZE = pow(2, SL_BITS);
