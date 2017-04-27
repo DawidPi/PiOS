@@ -9,3 +9,4 @@ set(SOURCES
         PiOS_test.cpp)
 
 enable_gtest("${SOURCES}" PiOS)
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--wrap,malloc")

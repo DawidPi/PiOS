@@ -49,3 +49,9 @@ TEST_F(PiOSTest, basicTests) {
 
     ASSERT_EQ(&piOs.allocator(), &mockedAllocator);
 }
+
+TEST_F(PiOSTest, allocationTest) {
+    auto allocatedSpace = malloc(5);
+    ASSERT_EQ(allocatedSpace, nullptr);
+    free(allocatedSpace);
+}
