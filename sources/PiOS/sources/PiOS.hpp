@@ -7,6 +7,7 @@
 
 #include "Time.hpp"
 #include "DynamicAllocator.hpp"
+#include "Scheduler.hpp"
 
 namespace PiOS {
     /*!
@@ -14,14 +15,22 @@ namespace PiOS {
      */
     class PiOS {
     public:
-        PiOS(DynamicAllocator *memoryAllocator);
+        PiOS(DynamicAllocator &allocator, Scheduler &scheduler);
 
-        bool createTask();
+        PiOS(const PiOS &rhs) = delete;
 
-        void onTimeTick();
+        PiOS &operator=(const PiOS &rhs)= delete;
 
-        void start();
+        void timeTick();
+
+        void addTask(const RealTimeTask &task);
+
+        DynamicAllocator &allocator();
+
     private:
+        DynamicAllocator &mAllocator;
+        Scheduler &mScheduler;
+        Time mTime;
     };
 }
 

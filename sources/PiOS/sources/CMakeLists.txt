@@ -11,6 +11,6 @@ set(SOURCES
         RealTimeTask.hpp
         Time.cpp
         Time.hpp
-        DynamicAllocator.hpp)
+        DynamicAllocator.hpp Scheduler.hpp)
 
 add_library(${PROJECT_NAME} STATIC ${SOURCES})

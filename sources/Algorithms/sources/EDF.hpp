@@ -7,6 +7,7 @@
 
 #include <array>
 #include <functional>
+#include <Scheduler.hpp>
 #include "RealTimeTask.hpp"
 
 namespace PiOS {
@@ -25,7 +26,7 @@ namespace PiOS {
      * for already released time and is sorted ascending considering
      * deadlines.
      */
-    class EDF {
+    class EDF : public Scheduler {
     public:
         /*!
          * \brief Type of callback, which will be invoked, when deadline is missed
@@ -41,38 +42,11 @@ namespace PiOS {
                 mPostFailCallback(postFailCallback) {};
 
         /*!
-         * \brief Informs EDF object, that some time quantum elapsed.
-         * @param newTime Current system time.
-         */
-        virtual void timeTick(const Time &newTime) =0;
-
-        /*!
-         * \brief Adds realTimeTask to the queue.
-         * @param task Task to be added.
-         */
-        virtual void addRealTimeTask(const RealTimeTask &task) = 0;
-
-        /*!
          * \brief Sets background task for the EDF. Task will be
          * executed, when real time queue is empty.
          * @param task
          */
         virtual void setBackgroundTask(const Task &task) = 0;
-
-        /*!
-         * \brief Fetches next task from the EDF. If RealTime queue
-         * is empty, then background task is executed.
-         * @return Task, that should be executed
-         */
-        virtual Task &fetchNextTask() =0;
-
-        /*!
-         * \brief Informs EDF, that last task is finished. Should delete
-         * last task from the queue. In case, when background task
-         * is executed, executing this method will have no side effects.
-         */
-        virtual void finishPendingTask() =0;
-
         virtual ~EDF() {};
 
     protected:
