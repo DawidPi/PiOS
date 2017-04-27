@@ -25,3 +25,4 @@ set(SOURCES
 add_library(${PROJECT_NAME} STATIC ${SOURCES})
 target_include_directories(${PROJECT_NAME} PUBLIC ../../PiOS/sources)
 target_link_libraries(${PROJECT_NAME} PiOS)
+target_compile_options(${PROJECT_NAME} PRIVATE "-Weffc++")

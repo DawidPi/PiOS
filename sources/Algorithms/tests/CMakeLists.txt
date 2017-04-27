@@ -13,6 +13,3 @@ set(SOURCES
         TLSF_test.cpp)
 
 enable_gtest("${SOURCES}" Algorithms)
-
-#target_link_libraries(${PROJECT_NAME} Algorithms)
-#add_dependencies(${PROJECT_NAME} Algorithms)

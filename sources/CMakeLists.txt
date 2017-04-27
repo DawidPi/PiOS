@@ -5,7 +5,7 @@ if(PiOS_BUILD_TESTS)
     downloadGtest()
 endif()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Weffc++ -pedantic")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic")
 
 if(PiOS_PLATFORM_TYPE STREQUAL "ARM")
 #    add_subdirectory(ARM)
