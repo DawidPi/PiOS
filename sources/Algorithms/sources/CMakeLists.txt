@@ -12,21 +12,16 @@ set(SOURCES
         SimpleBuddyFactory.cpp
         SimpleBuddyFactory.hpp
         EDF.hpp
-        RealTimeTask.cpp
-        RealTimeTask.hpp
-        Task.cpp
-        Task.hpp
         Context.cpp
         Context.hpp
         ListEDF.cpp
         ListEDF.hpp
-        Time.cpp
-        Time.hpp
         TLSFImpl.hpp
         TLSF.hpp
-        DynamicAllocator.hpp
         MsbLsb.hpp
         BitSlice.cpp
         BitSlice.hpp)
 
-add_library(${PROJECT_NAME} ${SOURCES})
+add_library(${PROJECT_NAME} STATIC ${SOURCES})
+target_include_directories(${PROJECT_NAME} PUBLIC ../../PiOS/sources)
+target_link_libraries(${PROJECT_NAME} PiOS)

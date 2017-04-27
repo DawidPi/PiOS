@@ -1,9 +1,4 @@
 //
-// Created by dawid on 31.01.17.
+// Created by dapl on 2017-04-27.
 //
 
-#include "PiOS.hpp"
-
-namespace PiOS{
-
-}

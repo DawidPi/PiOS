@@ -265,7 +265,7 @@ TLSF<SL_BITS, BitfieldType>::mergeTwoBlocks(UsedBlockHeader *&centerBlock, FreeB
         centerBlock->setSize(newBlockSize);
         otherBlock->~FreeBlockHeader();
     } else {
-        UniversalBlock freeBlockCpy(otherBlock->size(), false, otherBlock->isLastBlock(),
+        UniversalBlock freeBlockCpy(otherBlock->size(), false, centerBlock->isLastBlock(),
                                     otherBlock->previousPhysical());
         otherBlock->~FreeBlockHeader();
         centerBlock->~UsedBlockHeader();
@@ -282,6 +282,7 @@ TLSF<SL_BITS, BitfieldType>::removeFromQueue(const TLSF<SL_BITS, BitfieldType>::
     else {
         Indexes indexes = sizeToIndexes(blockToRemove->size());
         mMetadata.setHeader(indexes, blockToRemove->nextFreeBlock());
+        updateBitsets(sizeToIndexes(blockToRemove->size()));
     }
 }
 

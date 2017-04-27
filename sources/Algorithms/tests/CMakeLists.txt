@@ -7,7 +7,6 @@ set(SOURCES
         gtest_main.cpp
         FixedSizeBinaryTree_test.cpp
         SimpleBuddy_test.cpp
-        Time_test.cpp
         ListEDFTest.cpp
         MSBLSBCalculator_test.cpp
         BitSliceCalculator_test.cpp

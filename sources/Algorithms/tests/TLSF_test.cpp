@@ -176,6 +176,8 @@ TEST_F(TLSFTest, mergingBlocksTest) {
     std::size_t smallerAllocation = allocationSize >> 1 | allocationSize >> 2; // changling fli size
     auto checkAllocation = tlsf.allocate(smallerAllocation);
     ASSERT_EQ(checkAllocation.begin(), firstBlock.begin());
+    ASSERT_EQ(checkAllocation.end(), static_cast<char *>(firstBlock.begin()) + smallerAllocation);
+    ASSERT_EQ(checkAllocation.size(), smallerAllocation);
 
 
     ::operator delete(buffer);

@@ -3,7 +3,7 @@
 //
 
 #include <gtest/gtest.h>
-#include "Time.hpp"
+#include "../sources/Time.hpp"
 
 using namespace PiOS;
 

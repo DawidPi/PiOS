@@ -6,7 +6,7 @@
 #define PROJECT_TASK_H
 
 #include <functional>
-#include "Context.hpp"
+#include "../../Algorithms/sources/Context.hpp"
 
 namespace PiOS {
     /*!

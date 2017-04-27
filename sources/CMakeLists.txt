@@ -21,4 +21,4 @@ else()
 endif()
 
 add_subdirectory(Algorithms)
-#add_subdirectory(PiOS)
+add_subdirectory(PiOS)

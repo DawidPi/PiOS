@@ -1,46 +1,27 @@
 //
-// Created by dawid on 31.01.17.
+// Created by dapl on 2017-04-27.
 //
 
 #ifndef PROJECT_PIOS_HPP
 #define PROJECT_PIOS_HPP
 
-#include "Scheduler.hpp"
-#include "Thread.hpp"
+#include "Time.hpp"
+#include "DynamicAllocator.hpp"
 
-/*!
- * \brief namespace with PiOS API
- */
 namespace PiOS {
-
     /*!
-     * \brief Main manager of Operating system
+     * Facade class, that allows to use Operating System.
      */
     class PiOS {
     public:
-        PiOS() = delete;
+        PiOS(DynamicAllocator *memoryAllocator);
 
-        /*!
-         * PiOS constructor. For OS to be able to work it must know
-         * the scheduling algorithm and threads to launch.
-         * @param scheduler Scheduler algorithm to be used.
-         */
-        PiOS(Scheduler &&scheduler) : mScheduler(scheduler) {};
+        bool createTask();
 
-        /*!
-         * Adds new thread to current scheduler
-         * @param thread new thread, which is to be appended to scheduler
-         */
-        void addThread(const Thread &thread);
+        void onTimeTick();
 
-        /*!
-         * Changes currently used scheduler algorithm.
-         * @param scheduler new scheduler algorithm
-         */
-        void changeScheduler(Scheduler &scheduler);
-
+        void start();
     private:
-        Scheduler &mScheduler;
     };
 }
 
