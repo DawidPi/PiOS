@@ -10,6 +10,7 @@
 
 using namespace PiOS;
 using ::testing::_;
+using ::testing::ReturnRef;
 
 class PiOSTest : public ::testing::Test {
 public:
@@ -40,12 +41,17 @@ TEST_F(PiOSTest, basicTests) {
 
     PiOSImpl piOS(mockedAllocator, mockedScheduler);
 
+    Task backgroundTask([]() {});
+    RealTimeTask rtTask([]() {}, 2_time, 3_time);
     EXPECT_CALL(mockedScheduler, timeTick(1_time)).Times(1);
-    piOS.timeTick();
+    EXPECT_CALL(mockedScheduler, fetchNextTask())
+            .Times(2)
+            .WillOnce(ReturnRef(backgroundTask))
+            .WillOnce(ReturnRef(rtTask));
 
-    RealTimeTask task([]() {}, 2_time, 3_time);
+    piOS.timeTick();
     EXPECT_CALL(mockedScheduler, addRealTimeTask(_)).Times(1);
-    piOS.addTask(task);
+    piOS.addTask(rtTask);
 
     ASSERT_EQ(&piOS.allocator(), &mockedAllocator);
 }
@@ -60,22 +66,30 @@ TEST_F(PiOSTest, contextCallTest) {
     Allocator mockedAllocator;
     PiOSImpl piOS(mockedAllocator, mockedScheduler);
 
+    PiOS_hardware::Context::mContextStarted = false;
+    PiOS_hardware::Context::mContextSaved = false;
+
     ASSERT_FALSE(PiOS_hardware::Context::mContextStarted);
     ASSERT_FALSE(PiOS_hardware::Context::mContextSaved);
     EXPECT_CALL(mockedScheduler, timeTick(_)).Times(2);
     EXPECT_CALL(mockedScheduler, addRealTimeTask(_)).Times(2);
     RealTimeTask task([]() {}, 2_time, 3_time);
     RealTimeTask task2([]() {}, 3_time, 4_time);
+    Task backgroundTask([]() {});
+
+    EXPECT_CALL(mockedScheduler, fetchNextTask())
+            .Times(4)
+            .WillOnce(ReturnRef(backgroundTask))
+            .WillOnce(ReturnRef(backgroundTask))
+            .WillOnce(ReturnRef(task))
+            .WillOnce(ReturnRef(task2));
+
     piOS.addTask(task);
     piOS.addTask(task2);
 
     piOS.timeTick();
     piOS.timeTick();
 
-    ASSERT_TRUE(PiOS_hardware::Context::mContextStarted);
-    ASSERT_FALSE(PiOS_hardware::Context::mContextSaved);
-
-    piOS.timeTick();
     ASSERT_TRUE(PiOS_hardware::Context::mContextStarted);
     ASSERT_TRUE(PiOS_hardware::Context::mContextSaved);
 #endif

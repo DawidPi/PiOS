@@ -5,6 +5,7 @@
 #include "DynamicAllocator.hpp"
 #include "Scheduler.hpp"
 #include "PiOS.hpp"
+#include "Task.hpp"
 
 using namespace PiOS;
 
@@ -28,12 +29,27 @@ PiOSImpl::PiOSImpl(DynamicAllocator &allocator, Scheduler &scheduler) :
 
 void PiOSImpl::timeTick() {
     mScheduler.timeTick(++mTime);
+    setupTaskContext();
 }
 
 void PiOSImpl::addTask(const RealTimeTask &task) {
     mScheduler.addRealTimeTask(task);
+    setupTaskContext();
 }
 
 DynamicAllocator &PiOSImpl::allocator() {
     return mAllocator;
+}
+
+void PiOSImpl::setupTaskContext() {
+    Task &task = mScheduler.fetchNextTask();
+
+    if (&task != mCurrentTask) {
+        mCurrentTask = &task;
+
+        if (mCurrentTask != nullptr)
+            mCurrentTask->abort();
+
+        task.start();
+    }
 }

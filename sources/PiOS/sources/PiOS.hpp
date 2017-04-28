@@ -37,9 +37,12 @@ namespace PiOS {
         DynamicAllocator &allocator();
 
     private:
+        Task *mCurrentTask = nullptr;
         DynamicAllocator &mAllocator;
         Scheduler &mScheduler;
         Time mTime;
+
+        void setupTaskContext();
     };
 }
 
