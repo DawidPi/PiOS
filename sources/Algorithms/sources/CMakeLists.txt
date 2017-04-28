@@ -12,8 +12,6 @@ set(SOURCES
         SimpleBuddyFactory.cpp
         SimpleBuddyFactory.hpp
         EDF.hpp
-        Context.cpp
-        Context.hpp
         ListEDF.cpp
         ListEDF.hpp
         TLSFImpl.hpp

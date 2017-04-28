@@ -6,7 +6,8 @@
 #define PROJECT_TASK_H
 
 #include <functional>
-#include "../../Algorithms/sources/Context.hpp"
+#include <Context.hpp>
+#include <type_traits>
 
 namespace PiOS {
     /*!
@@ -43,7 +44,10 @@ namespace PiOS {
 
     private:
         TaskJob mJob;
-        Context mContext;
+        PiOS_hardware::Context mContext;
+        static_assert(std::is_base_of<PiOS::ContextInterface, PiOS_hardware::Context>::value,
+                      "Provided Context class is not "
+                              "base class of ContextInterface");
     };
 }
 

@@ -10,21 +10,30 @@
 #include "Scheduler.hpp"
 
 namespace PiOS {
-    /*!
-     * Facade class, that allows to use Operating System.
-     */
-    class PiOS {
+
+    class PiOSImpl;
+
+    class PiOSHolder {
     public:
-        PiOS(DynamicAllocator &allocator, Scheduler &scheduler);
+        static void choosePiOSImplementation(PiOSImpl *piOSImplementation);
 
-        PiOS(const PiOS &rhs) = delete;
+        static PiOSImpl *getInstance();
 
-        PiOS &operator=(const PiOS &rhs)= delete;
+    private:
+        static PiOSImpl *mInstance;
+    };
+
+
+    class PiOSImpl {
+    public:
+        PiOSImpl(DynamicAllocator &allocator, Scheduler &scheduler);
+
+        PiOSImpl(const PiOSImpl &rhs) = delete;
+
+        PiOSImpl &operator=(const PiOSImpl &rhs)= delete;
 
         void timeTick();
-
         void addTask(const RealTimeTask &task);
-
         DynamicAllocator &allocator();
 
     private:

@@ -13,7 +13,9 @@ set(SOURCES
         Time.hpp
         DynamicAllocator.hpp
         Scheduler.hpp
-        dynAllocation.cpp)
+        ContextInterface.hpp)
 
 add_library(${PROJECT_NAME} STATIC ${SOURCES})
+target_link_libraries(${PROJECT_NAME} hardware)
+target_include_directories(${PROJECT_NAME} PUBLIC "../hardware/${PiOS_PLATFORM_TYPE}")
 target_compile_options(${PROJECT_NAME} PRIVATE "-Weffc++")

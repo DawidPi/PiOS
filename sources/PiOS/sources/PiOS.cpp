@@ -8,19 +8,32 @@
 
 using namespace PiOS;
 
-PiOS::PiOS::PiOS(DynamicAllocator &allocator, Scheduler &scheduler) :
+
+void PiOSHolder::choosePiOSImplementation(PiOSImpl *piOSImplementation) {
+    mInstance = piOSImplementation;
+}
+
+PiOSImpl *PiOSHolder::getInstance() {
+    return mInstance;
+}
+
+PiOSImpl *PiOS::PiOSHolder::mInstance = nullptr;
+
+PiOSImpl::PiOSImpl(DynamicAllocator &allocator, Scheduler &scheduler) :
         mAllocator(allocator),
         mScheduler(scheduler),
-        mTime(0) {}
+        mTime(0_time) {
 
-void PiOS::PiOS::timeTick() {
+}
+
+void PiOSImpl::timeTick() {
     mScheduler.timeTick(++mTime);
 }
 
-void PiOS::PiOS::addTask(const RealTimeTask &task) {
+void PiOSImpl::addTask(const RealTimeTask &task) {
     mScheduler.addRealTimeTask(task);
 }
 
-DynamicAllocator &PiOS::PiOS::allocator() {
+DynamicAllocator &PiOSImpl::allocator() {
     return mAllocator;
 }
