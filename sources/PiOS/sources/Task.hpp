@@ -45,9 +45,10 @@ namespace PiOS {
     private:
         TaskJob mJob;
         PiOS_hardware::Context mContext;
-        static_assert(std::is_base_of<PiOS::ContextInterface, PiOS_hardware::Context>::value,
-                      "Provided Context class is not "
-                              "base class of ContextInterface");
+        static_assert(has_saveContext_method<PiOS_hardware::Context>::value,
+                      "Context is missing method void saveContext()");
+        static_assert(has_startContext_method<PiOS_hardware::Context>::value,
+                      "Context is missing method void startContext()");
     };
 }
 

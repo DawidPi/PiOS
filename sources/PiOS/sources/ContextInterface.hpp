@@ -6,13 +6,32 @@
 #define PROJECT_CONTEXTINTERFACE_HPP
 
 namespace PiOS {
-    class ContextInterface {
+
+    template<typename T>
+    class has_startContext_method {
+        template<typename T1>
+        static char testMethod(decltype(&T1::startContext));
+
+        template<typename T1>
+        static long long testMethod(...);
     public:
-        virtual void startContext()=0;
+        enum {
+            value = sizeof testMethod<T>(nullptr) == 1
+        };
+    };
 
-        virtual void saveContext()=0;
+    template<typename T>
+    class has_saveContext_method {
+        template<typename T1>
+        static char testMethod(decltype(&T1::saveContext));
 
-        virtual ~ContextInterface() {};
+        template<typename T1>
+        static long long testMethod(...);
+
+    public:
+        enum {
+            value = sizeof testMethod<T>(nullptr) == 1
+        };
     };
 }
 

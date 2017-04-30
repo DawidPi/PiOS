@@ -12,13 +12,13 @@
 namespace PiOS_hardware {
     using namespace PiOS;
 
-    class Context final : public ContextInterface {
+    class Context {
     public:
         Context() {}
 
-        virtual void startContext() override;
+        void startContext();
 
-        virtual void saveContext() override;
+        void saveContext();
 
     public:
         static bool mContextStarted;
