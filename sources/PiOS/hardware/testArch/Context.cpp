@@ -5,13 +5,13 @@
 #include "Context.hpp"
 
 
-bool PiOS_hardware::Context::mContextStarted = false;
-bool PiOS_hardware::Context::mContextSaved = false;
+bool PiOS::Context::mContextStarted = false;
+bool PiOS::Context::mContextSaved = false;
 
-void PiOS_hardware::Context::startContext() {
+void PiOS::Context::startContext() {
     mContextStarted = true;
 }
 
-void PiOS_hardware::Context::saveContext() {
+void PiOS::Context::saveContext() {
     mContextSaved = true;
 }

@@ -18,13 +18,21 @@ namespace PiOS {
         /*!
          * \brief Typedef for a functional object, that should be executed, when task is started
          */
-        using TaskJob = std::function<void()>;
+        using TaskJob = void (*)();
 
         /*!
          * \brief Constructor.
          * @param task Task, which should be executed, when the task starts.
          */
-        explicit Task(TaskJob task);
+        explicit Task(TaskJob task, std::size_t stackSize);
+
+        Task(const Task &rhs) = delete;
+
+        const Task &operator=(const Task &rhs) = delete;
+
+        Task(Task &&rhs);
+
+        const Task &operator=(Task &&rhs);
 
         /*!
          * \brief Starts execution of the task.
@@ -42,12 +50,16 @@ namespace PiOS {
          */
         TaskJob job() { return mJob; }
 
+        ~Task();
+
     private:
         TaskJob mJob;
-        PiOS_hardware::Context mContext;
-        static_assert(has_saveContext_method<PiOS_hardware::Context>::value,
+        void *mStackpointer;
+        PiOS::Context mContext;
+
+        static_assert(has_saveContext_method<PiOS::Context>::value,
                       "Context is missing method void saveContext()");
-        static_assert(has_startContext_method<PiOS_hardware::Context>::value,
+        static_assert(has_startContext_method<PiOS::Context>::value,
                       "Context is missing method void startContext()");
     };
 }

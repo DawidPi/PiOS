@@ -33,7 +33,8 @@ namespace PiOS {
         PiOSImpl &operator=(const PiOSImpl &rhs)= delete;
 
         void timeTick();
-        void addTask(const RealTimeTask &task);
+
+        void addTask(RealTimeTask &&task);
         DynamicAllocator &allocator();
 
     private:

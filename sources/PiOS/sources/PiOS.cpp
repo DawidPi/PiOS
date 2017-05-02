@@ -32,8 +32,8 @@ void PiOSImpl::timeTick() {
     setupTaskContext();
 }
 
-void PiOSImpl::addTask(const RealTimeTask &task) {
-    mScheduler.addRealTimeTask(task);
+void PiOSImpl::addTask(RealTimeTask &&task) {
+    mScheduler.addRealTimeTask(std::forward<RealTimeTask>(task));
     setupTaskContext();
 }
 

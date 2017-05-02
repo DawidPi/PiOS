@@ -46,7 +46,7 @@ namespace PiOS {
          * executed, when real time queue is empty.
          * @param task
          */
-        virtual void setBackgroundTask(const Task &task) = 0;
+        virtual void setBackgroundTask(Task &&task) = 0;
         virtual ~EDF() {};
 
     protected:

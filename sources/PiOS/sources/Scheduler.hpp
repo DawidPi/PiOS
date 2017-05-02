@@ -25,7 +25,7 @@ namespace PiOS {
          * \brief Adds realTimeTask to the queue.
          * @param task Task to be added.
          */
-        virtual void addRealTimeTask(const RealTimeTask &task)=0;
+        virtual void addRealTimeTask(RealTimeTask &&task)=0;
 
         /*!
          * \brief Fetches next task from the Scheduler. If RealTime queue

@@ -6,9 +6,4 @@ set(SOURCES
 set(HEADERS
         Context.hpp)
 
-add_library(${PROJECT_NAME} STATIC ${SOURCES} ${HEADERS})
-
-
-
-
-
+add_library(${PROJECT_NAME} ${SOURCES} ${HEADERS})

@@ -19,8 +19,12 @@ public:
         MOCK_METHOD1(timeTick, void(
                 const Time&));
 
-        MOCK_METHOD1(addRealTimeTask, void(
-                const RealTimeTask&));
+        void addRealTimeTask(RealTimeTask &&rval) {
+            addRealTimeTaskProxy(rval);
+        }
+
+        MOCK_METHOD1(addRealTimeTaskProxy, void(
+                RealTimeTask &));
 
         MOCK_METHOD0(fetchNextTask, Task & ());
 
@@ -41,8 +45,8 @@ TEST_F(PiOSTest, basicTests) {
 
     PiOSImpl piOS(mockedAllocator, mockedScheduler);
 
-    Task backgroundTask([]() {});
-    RealTimeTask rtTask([]() {}, 2_time, 3_time);
+    Task backgroundTask([]() {}, 0);
+    RealTimeTask rtTask([]() {}, 2_time, 3_time, 47);
     EXPECT_CALL(mockedScheduler, timeTick(1_time)).Times(1);
     EXPECT_CALL(mockedScheduler, fetchNextTask())
             .Times(2)
@@ -50,8 +54,8 @@ TEST_F(PiOSTest, basicTests) {
             .WillOnce(ReturnRef(rtTask));
 
     piOS.timeTick();
-    EXPECT_CALL(mockedScheduler, addRealTimeTask(_)).Times(1);
-    piOS.addTask(rtTask);
+    EXPECT_CALL(mockedScheduler, addRealTimeTaskProxy(_)).Times(1);
+    piOS.addTask(std::move(rtTask));
 
     ASSERT_EQ(&piOS.allocator(), &mockedAllocator);
 }
@@ -66,16 +70,16 @@ TEST_F(PiOSTest, contextCallTest) {
     Allocator mockedAllocator;
     PiOSImpl piOS(mockedAllocator, mockedScheduler);
 
-    PiOS_hardware::Context::mContextStarted = false;
-    PiOS_hardware::Context::mContextSaved = false;
+    PiOS::Context::mContextStarted = false;
+    PiOS::Context::mContextSaved = false;
 
-    ASSERT_FALSE(PiOS_hardware::Context::mContextStarted);
-    ASSERT_FALSE(PiOS_hardware::Context::mContextSaved);
+    ASSERT_FALSE(PiOS::Context::mContextStarted);
+    ASSERT_FALSE(PiOS::Context::mContextSaved);
     EXPECT_CALL(mockedScheduler, timeTick(_)).Times(2);
-    EXPECT_CALL(mockedScheduler, addRealTimeTask(_)).Times(2);
-    RealTimeTask task([]() {}, 2_time, 3_time);
-    RealTimeTask task2([]() {}, 3_time, 4_time);
-    Task backgroundTask([]() {});
+    EXPECT_CALL(mockedScheduler, addRealTimeTaskProxy(_)).Times(2);
+    RealTimeTask task([]() {}, 2_time, 3_time, 47);
+    RealTimeTask task2([]() {}, 3_time, 4_time, 47);
+    Task backgroundTask([]() {}, 0);
 
     EXPECT_CALL(mockedScheduler, fetchNextTask())
             .Times(4)
@@ -84,14 +88,14 @@ TEST_F(PiOSTest, contextCallTest) {
             .WillOnce(ReturnRef(task))
             .WillOnce(ReturnRef(task2));
 
-    piOS.addTask(task);
-    piOS.addTask(task2);
+    piOS.addTask(std::move(task));
+    piOS.addTask(std::move(task2));
 
     piOS.timeTick();
     piOS.timeTick();
 
-    ASSERT_TRUE(PiOS_hardware::Context::mContextStarted);
-    ASSERT_TRUE(PiOS_hardware::Context::mContextSaved);
+    ASSERT_TRUE(PiOS::Context::mContextStarted);
+    ASSERT_TRUE(PiOS::Context::mContextSaved);
 #endif
 
 }

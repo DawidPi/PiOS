@@ -8,3 +8,7 @@ mark_as_advanced(VERSION_MAJOR VERSION_MINOR VERSION_PATCH)
 
 add_subdirectory(sources)
 enable_doxygen()
+
+if (PiOS_BUILD_EXAMPLES)
+    add_subdirectory(examples)
+endif ()

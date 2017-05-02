@@ -60,10 +60,14 @@ namespace PiOS {
          * @param startTime
          * @param deadline
          */
-        explicit RealTimeTask(const TaskJob &task, const Time &startTime, const Time &deadline)
-                : Task(task),
+        explicit RealTimeTask(const TaskJob &task, const Time &startTime, const Time &deadline, std::size_t stackSize)
+                : Task(task, stackSize),
                   mDeadline(deadline),
                   mReleaseTime(startTime) {}
+
+        RealTimeTask(const RealTimeTask &rhs) = delete;
+
+        RealTimeTask(RealTimeTask &&task);
 
         /*!
          * \brief Allows to get release time of the Task.

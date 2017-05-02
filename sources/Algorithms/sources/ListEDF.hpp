@@ -60,7 +60,7 @@ namespace PiOS {
          * be smaller, than deadline time and deadline cannot be smaller, than current
          * system time.
          */
-        void addRealTimeTask(const RealTimeTask &task) override;
+        void addRealTimeTask(RealTimeTask &&task) override;
 
         /*!
          * \brief Sets task, that is to be executed, when no other task is left in the
@@ -70,7 +70,7 @@ namespace PiOS {
          * @param task Background task, that is to be executed, when there is no ready
          * RealTimeTask set.
          */
-        void setBackgroundTask(const Task &task) override { mBackgroundTask = task; }
+        void setBackgroundTask(Task &&task) override { mBackgroundTask = std::move(task); }
 
         /*!
          * \brief Indicates, that last fetched Task is finished, and therefore should be removed
