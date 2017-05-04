@@ -8,6 +8,7 @@
 #include <gmock/gmock.h>
 #include <Scheduler.hpp>
 #include <DynamicAllocator.hpp>
+#include <RealTimeTask.hpp>
 
 
 class SchedulerMock : public PiOS::Scheduler {
