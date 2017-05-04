@@ -28,7 +28,7 @@ namespace PiOS {
 
             /*!
              * \brief Constructor, which decides, how the comparator will be comparing the tasks.
-             * @param compareType Type of comparison, that Comparator is to be performed.
+             * \param compareType Type of comparison, that Comparator is to be performed.
              */
             explicit RTTaskComparator(CompareType compareType) : mCompareType(compareType) {}
 
@@ -56,18 +56,25 @@ namespace PiOS {
         /*!
          * \brief Constructor. Creates RealTimeTask with RealTime constants required for proper scheduling.
          *
-         * @param task
-         * @param startTime
-         * @param deadline
+         * \param job Job to be executed by the Task.
+         * \param startTime Release time of the Task.
+         * \param deadline Deadline of the Task.
+         * \param stackSize Size of the task's stack.
+         * \param startUpFunction StartUp of the job. Usually calls current job and exit system call.
          */
-        explicit RealTimeTask(const TaskJob &task, const Time &startTime, const Time &deadline, std::size_t stackSize)
-                : Task(task, stackSize),
+        explicit RealTimeTask(const TaskJob &job, const Time &startTime, const Time &deadline, std::size_t stackSize,
+                              StartUp startUpFunction = Task::defaultStartUp)
+                : Task(job, stackSize, startUpFunction),
                   mDeadline(deadline),
                   mReleaseTime(startTime) {}
 
         RealTimeTask(const RealTimeTask &rhs) = delete;
 
-        RealTimeTask(RealTimeTask &&task);
+        /*!
+         * \brief Move constructor
+         * @param rhs Right Hand Side of constructor.
+         */
+        RealTimeTask(RealTimeTask &&rhs);
 
         /*!
          * \brief Allows to get release time of the Task.

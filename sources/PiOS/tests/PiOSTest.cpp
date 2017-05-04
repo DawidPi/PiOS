@@ -7,6 +7,8 @@
 #include <Time.hpp>
 #include <RealTimeTask.hpp>
 #include <PiOS.hpp>
+#include <SystemCall.hpp>
+#include "Mocks.hpp"
 
 using namespace PiOS;
 using ::testing::_;
@@ -14,36 +16,17 @@ using ::testing::ReturnRef;
 
 class PiOSTest : public ::testing::Test {
 public:
-    class SchedulerMock : public Scheduler {
-    public:
-        MOCK_METHOD1(timeTick, void(
-                const Time&));
 
-        void addRealTimeTask(RealTimeTask &&rval) {
-            addRealTimeTaskProxy(rval);
-        }
-
-        MOCK_METHOD1(addRealTimeTaskProxy, void(
-                RealTimeTask &));
-
-        MOCK_METHOD0(fetchNextTask, Task & ());
-
-        MOCK_METHOD0(finishPendingTask, void());
-    };
-
-    class Allocator : public DynamicAllocator {
-    public:
-        MOCK_METHOD1(allocate, MemorySpace(std::size_t));
-
-        MOCK_METHOD1(deallocate, void(void * ));
-    };
+    static bool taskExecuted;
 };
+
+bool PiOSTest::taskExecuted = false;
 
 TEST_F(PiOSTest, basicTests) {
     SchedulerMock mockedScheduler;
-    Allocator mockedAllocator;
+    AllocatorMock mockedAllocator;
 
-    PiOSImpl piOS(mockedAllocator, mockedScheduler);
+    PiOS::PiOS piOS(mockedAllocator, mockedScheduler);
 
     Task backgroundTask([]() {}, 0);
     RealTimeTask rtTask([]() {}, 2_time, 3_time, 47);
@@ -67,8 +50,8 @@ TEST_F(PiOSTest, contextCallTest) {
     return;
 #else
     SchedulerMock mockedScheduler;
-    Allocator mockedAllocator;
-    PiOSImpl piOS(mockedAllocator, mockedScheduler);
+    AllocatorMock mockedAllocator;
+    PiOS::PiOS piOS(mockedAllocator, mockedScheduler);
 
     PiOS::Context::mContextStarted = false;
     PiOS::Context::mContextSaved = false;
@@ -100,3 +83,48 @@ TEST_F(PiOSTest, contextCallTest) {
 
 }
 
+TEST_F(PiOSTest, exitAndStartUPCalled) {
+#ifndef TEST_CONTEXT
+    ASSERT_TRUE(true);
+    return;
+#else
+    Context::mStartUpFunction = nullptr;
+
+    SchedulerMock mockedScheduler;
+    AllocatorMock mockedAllocator;
+
+    PiOS::PiOS piOS(mockedAllocator, mockedScheduler);
+    PiOSHolder::choosePiOSImplementation(&piOS);
+
+    ASSERT_EQ(Context::mStartUpFunction, nullptr);
+
+    RealTimeTask task0([]() { PiOSTest::taskExecuted = true; }, 0_time, 3_time, 47);
+    ASSERT_EQ(task0.startUpFunction(), Task::defaultStartUp);
+
+    void (*fakeStartUp)()  = []() {};
+    RealTimeTask task1([]() {}, 0_time, 4_time, 47, fakeStartUp);
+    ASSERT_EQ(task1.startUpFunction(), fakeStartUp);
+
+    // normally one would add the task first, but in tests with mocks it's not needed
+    //piOS.addTask(std::move(task0));
+
+    EXPECT_CALL(mockedScheduler, timeTick(1_time))
+            .Times(1);
+    EXPECT_CALL(mockedScheduler, fetchNextTask())
+            .Times(1)
+            .WillOnce(ReturnRef(task0));
+
+    piOS.timeTick();
+
+    ASSERT_TRUE(Context::mContextStarted);
+    ASSERT_EQ(Context::mStartUpFunction, Task::defaultStartUp);
+
+    SystemCall::exitCalled = false;
+    ASSERT_FALSE(SystemCall::exitCalled);
+    ASSERT_FALSE(PiOSTest::taskExecuted);
+
+    Task::defaultStartUp();
+    ASSERT_TRUE(PiOSTest::taskExecuted);
+    ASSERT_TRUE(SystemCall::exitCalled);
+#endif
+}

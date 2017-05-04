@@ -4,7 +4,7 @@ set(SOURCES
         Context.cpp)
 
 set(HEADERS
-        Context.hpp)
+        Context.hpp SystemCall.cpp SystemCall.hpp)
 
 add_library(${PROJECT_NAME} STATIC ${SOURCES} ${HEADERS})
 

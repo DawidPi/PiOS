@@ -5,17 +5,15 @@
 #ifndef PROJECT_CONTEXT_HPP
 #define PROJECT_CONTEXT_HPP
 
-#include "../../sources/ContextInterface.hpp"
 #include <cstddef>
+#include "../../sources/ContextInterface.hpp"
+#include "../../sources/CommonTypes.hpp"
 
 #define TEST_CONTEXT
 
 namespace PiOS {
-    using namespace PiOS;
-
     class Context {
     public:
-
         static constexpr std::size_t minStackSize = 47ull;
 
         using PCPointer = void (*)();
@@ -24,7 +22,7 @@ namespace PiOS {
                 mStackPointer(stackPointer),
                 mPC(function) {}
 
-        void startContext();
+        void startContext(StartUp function);
 
         void saveContext();
 
@@ -33,10 +31,10 @@ namespace PiOS {
         PCPointer mPC;
 
     public:
+        static StartUp mStartUpFunction;
         static bool mContextStarted;
         static bool mContextSaved;
     };
 }
-
 
 #endif //PROJECT_CONTEXT_HPP

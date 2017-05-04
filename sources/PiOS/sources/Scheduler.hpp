@@ -5,6 +5,8 @@
 #ifndef PROJECT_SCHEDULER_HPP
 #define PROJECT_SCHEDULER_HPP
 
+#include "Task.hpp"
+
 namespace PiOS {
 
     class Task;
@@ -41,7 +43,26 @@ namespace PiOS {
          */
         virtual void finishPendingTask()=0;
 
+        /*!
+         * \brief Informs about current Job, that is currently chosen, by scheduler
+         * \return TaskJob, which is being processed
+         */
+        Task::TaskJob currentJob() { return mCurrentJob; }
+
+        /*!
+         * \brief Sets job, to be executed, when context swiches. Should be called only
+         * internally by the kernel, not user
+         * \param newJob new job, that is to be executed by startUp function.
+         */
+        void setCurrentJob(Task::TaskJob newJob) { mCurrentJob = newJob; }
+
+        /*!
+         * \brief Destructor
+         */
         virtual ~Scheduler() {};
+
+    private:
+        static Task::TaskJob mCurrentJob;
     };
 }
 

@@ -5,47 +5,46 @@
 #include "DynamicAllocator.hpp"
 #include "Scheduler.hpp"
 #include "PiOS.hpp"
-#include "Task.hpp"
 
 using namespace PiOS;
 
 
-void PiOSHolder::choosePiOSImplementation(PiOSImpl *piOSImplementation) {
+void PiOSHolder::choosePiOSImplementation(PiOS *piOSImplementation) {
     mInstance = piOSImplementation;
 }
 
-PiOSImpl *PiOSHolder::getInstance() {
+::PiOS::PiOS *PiOSHolder::getInstance() {
     return mInstance;
 }
 
-PiOSImpl *PiOS::PiOSHolder::mInstance = nullptr;
+::PiOS::PiOS *PiOS::PiOSHolder::mInstance = nullptr;
 
-PiOSImpl::PiOSImpl(DynamicAllocator &allocator, Scheduler &scheduler) :
+PiOS::PiOS::PiOS(DynamicAllocator &allocator, Scheduler &scheduler) :
         mAllocator(allocator),
         mScheduler(scheduler),
         mTime(0_time) {
-
 }
 
-void PiOSImpl::timeTick() {
+void PiOS::PiOS::timeTick() {
     mScheduler.timeTick(++mTime);
     setupTaskContext();
 }
 
-void PiOSImpl::addTask(RealTimeTask &&task) {
+void PiOS::PiOS::addTask(RealTimeTask &&task) {
     mScheduler.addRealTimeTask(std::forward<RealTimeTask>(task));
     setupTaskContext();
 }
 
-DynamicAllocator &PiOSImpl::allocator() {
+DynamicAllocator &PiOS::PiOS::allocator() {
     return mAllocator;
 }
 
-void PiOSImpl::setupTaskContext() {
+void PiOS::PiOS::setupTaskContext() {
     Task &task = mScheduler.fetchNextTask();
 
     if (&task != mCurrentTask) {
         mCurrentTask = &task;
+        scheduler().setCurrentJob(mCurrentTask->job());
 
         if (mCurrentTask != nullptr)
             mCurrentTask->abort();

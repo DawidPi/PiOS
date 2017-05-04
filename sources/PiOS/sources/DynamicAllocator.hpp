@@ -65,6 +65,9 @@ namespace PiOS {
          */
         virtual void deallocate(void *spaceBegin)=0;
 
+        /*!
+         * \brief Destructor.
+         */
         virtual ~DynamicAllocator() {};
     };
 }

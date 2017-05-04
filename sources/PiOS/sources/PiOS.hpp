@@ -11,31 +11,32 @@
 
 namespace PiOS {
 
-    class PiOSImpl;
+    class PiOS;
 
     class PiOSHolder {
     public:
-        static void choosePiOSImplementation(PiOSImpl *piOSImplementation);
+        static void choosePiOSImplementation(PiOS *piOSImplementation);
 
-        static PiOSImpl *getInstance();
+        static PiOS *getInstance();
 
     private:
-        static PiOSImpl *mInstance;
+        static PiOS *mInstance;
     };
 
-
-    class PiOSImpl {
+    class PiOS {
     public:
-        PiOSImpl(DynamicAllocator &allocator, Scheduler &scheduler);
+        PiOS(DynamicAllocator &allocator, Scheduler &scheduler);
 
-        PiOSImpl(const PiOSImpl &rhs) = delete;
+        PiOS(const PiOS &rhs) = delete;
 
-        PiOSImpl &operator=(const PiOSImpl &rhs)= delete;
+        PiOS &operator=(const PiOS &rhs)= delete;
 
         void timeTick();
 
         void addTask(RealTimeTask &&task);
         DynamicAllocator &allocator();
+
+        Scheduler &scheduler() { return mScheduler; };
 
     private:
         Task *mCurrentTask = nullptr;

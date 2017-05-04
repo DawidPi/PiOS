@@ -5,7 +5,11 @@ set(SOURCES gtest_main.cpp)
 
 set(SOURCES
         gtest_main.cpp
-        Time_test.cpp
-        PiOS_test.cpp)
+        TimeTest.cpp
+        PiOSTest.cpp
+        Mocks.hpp
+        PiOSHolderTest.cpp
+        TaskTest.cpp
+        SchedulerTest.cpp)
 
 enable_gtest("${SOURCES}" PiOS)

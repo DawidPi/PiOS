@@ -33,6 +33,30 @@ namespace PiOS {
             value = sizeof testMethod<T>(nullptr) == 1
         };
     };
+
+    template<typename T>
+    class has_minStackSize_member {
+        template<typename T1>
+        static char testMethod(decltype(&T1::minStackSize));
+
+        template<typename T1>
+        static long long testMethod(...);
+
+    public:
+        enum {
+            value = sizeof testMethod<T>(nullptr) == 1
+        };
+    };
+
+    template<typename T>
+    class implementsContextInterface {
+    public:
+        enum {
+            value = has_saveContext_method<T>::value and
+                    has_startContext_method<T>::value and
+                    has_minStackSize_member<T>::value
+        };
+    };
 }
 
 

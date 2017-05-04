@@ -6,7 +6,7 @@
 
 using namespace PiOS;
 
-RealTimeTask::RealTimeTask(RealTimeTask &&task) :
-        Task(std::forward<Task>(task)),
-        mDeadline(task.deadline()),
-        mReleaseTime(task.releaseTime()) {}
+RealTimeTask::RealTimeTask(RealTimeTask &&rhs) :
+        Task(std::forward<Task>(rhs)),
+        mDeadline(rhs.deadline()),
+        mReleaseTime(rhs.releaseTime()) {}

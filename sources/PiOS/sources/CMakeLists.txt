@@ -6,7 +6,8 @@ set(SOURCES
         PiOS.cpp
         Task.cpp
         RealTimeTask.cpp
-        Time.cpp)
+        Time.cpp
+        Scheduler.cpp)
 
 set(HEADERS
         PiOS.hpp
@@ -15,7 +16,7 @@ set(HEADERS
         Time.hpp
         DynamicAllocator.hpp
         Scheduler.hpp
-        ContextInterface.hpp)
+        ContextInterface.hpp CommonTypes.hpp ../tests/Mocks.hpp)
 
 add_library(${PROJECT_NAME} STATIC ${SOURCES} ${HEADERS})
 target_link_libraries(${PROJECT_NAME} hardware)

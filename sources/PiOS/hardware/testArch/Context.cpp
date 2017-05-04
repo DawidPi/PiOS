@@ -4,14 +4,17 @@
 
 #include "Context.hpp"
 
+using namespace PiOS;
 
-bool PiOS::Context::mContextStarted = false;
-bool PiOS::Context::mContextSaved = false;
+bool Context::mContextStarted = false;
+bool Context::mContextSaved = false;
+StartUp Context::mStartUpFunction = nullptr;
 
-void PiOS::Context::startContext() {
+void Context::startContext(StartUp startUp) {
+    mStartUpFunction = startUp;
     mContextStarted = true;
 }
 
-void PiOS::Context::saveContext() {
+void Context::saveContext() {
     mContextSaved = true;
 }
