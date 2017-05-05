@@ -4,7 +4,7 @@
 
 #include <SystemCall.hpp>
 #include "Task.hpp"
-#include "PiOS.hpp"
+#include "Pi.hpp"
 
 
 PiOS::Task::Task(TaskJob job, std::size_t stackSize, StartUp startUpFunction) :

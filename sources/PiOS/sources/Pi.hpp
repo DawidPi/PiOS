@@ -11,29 +11,18 @@
 
 namespace PiOS {
 
-    class PiOS;
-
-    class PiOSHolder {
+    class Pi {
     public:
-        static void choosePiOSImplementation(PiOS *piOSImplementation);
+        Pi(DynamicAllocator &allocator, Scheduler &scheduler);
 
-        static PiOS *getInstance();
+        Pi(const Pi &rhs) = delete;
 
-    private:
-        static PiOS *mInstance;
-    };
-
-    class PiOS {
-    public:
-        PiOS(DynamicAllocator &allocator, Scheduler &scheduler);
-
-        PiOS(const PiOS &rhs) = delete;
-
-        PiOS &operator=(const PiOS &rhs)= delete;
+        Pi &operator=(const Pi &rhs)= delete;
 
         void timeTick();
 
         void addTask(RealTimeTask &&task);
+
         DynamicAllocator &allocator();
 
         Scheduler &scheduler() { return mScheduler; };
@@ -45,6 +34,16 @@ namespace PiOS {
         Time mTime;
 
         void setupTaskContext();
+    };
+
+    class PiOSHolder {
+    public:
+        static void choosePiOSImplementation(Pi *piObject);
+
+        static Pi *getInstance();
+
+    private:
+        static Pi *mInstance;
     };
 }
 

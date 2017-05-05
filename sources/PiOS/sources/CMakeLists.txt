@@ -3,14 +3,14 @@ project(PiOS)
 set(CMAKE_CXX_STANDARD 14)
 
 set(SOURCES
-        PiOS.cpp
+        Pi.cpp
         Task.cpp
         RealTimeTask.cpp
         Time.cpp
         Scheduler.cpp)
 
 set(HEADERS
-        PiOS.hpp
+        Pi.hpp
         Task.hpp
         RealTimeTask.hpp
         Time.hpp

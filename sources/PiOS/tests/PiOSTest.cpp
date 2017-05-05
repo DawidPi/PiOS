@@ -6,7 +6,7 @@
 #include <gmock/gmock.h>
 #include <Time.hpp>
 #include <RealTimeTask.hpp>
-#include <PiOS.hpp>
+#include <Pi.hpp>
 #include <SystemCall.hpp>
 #include "Mocks.hpp"
 
@@ -26,7 +26,7 @@ TEST_F(PiOSTest, basicTests) {
     SchedulerMock mockedScheduler;
     AllocatorMock mockedAllocator;
 
-    PiOS::PiOS piOS(mockedAllocator, mockedScheduler);
+    Pi piOS(mockedAllocator, mockedScheduler);
 
     Task backgroundTask([]() {}, 0);
     RealTimeTask rtTask([]() {}, 2_time, 3_time, 47);
@@ -51,13 +51,13 @@ TEST_F(PiOSTest, contextCallTest) {
 #else
     SchedulerMock mockedScheduler;
     AllocatorMock mockedAllocator;
-    PiOS::PiOS piOS(mockedAllocator, mockedScheduler);
+    Pi piOS(mockedAllocator, mockedScheduler);
 
-    PiOS::Context::mContextStarted = false;
-    PiOS::Context::mContextSaved = false;
+    Context::mContextStarted = false;
+    Context::mContextSaved = false;
 
-    ASSERT_FALSE(PiOS::Context::mContextStarted);
-    ASSERT_FALSE(PiOS::Context::mContextSaved);
+    ASSERT_FALSE(Context::mContextStarted);
+    ASSERT_FALSE(Context::mContextSaved);
     EXPECT_CALL(mockedScheduler, timeTick(_)).Times(2);
     EXPECT_CALL(mockedScheduler, addRealTimeTaskProxy(_)).Times(2);
     RealTimeTask task([]() {}, 2_time, 3_time, 47);
@@ -77,8 +77,8 @@ TEST_F(PiOSTest, contextCallTest) {
     piOS.timeTick();
     piOS.timeTick();
 
-    ASSERT_TRUE(PiOS::Context::mContextStarted);
-    ASSERT_TRUE(PiOS::Context::mContextSaved);
+    ASSERT_TRUE(Context::mContextStarted);
+    ASSERT_TRUE(Context::mContextSaved);
 #endif
 
 }
@@ -93,7 +93,7 @@ TEST_F(PiOSTest, exitAndStartUPCalled) {
     SchedulerMock mockedScheduler;
     AllocatorMock mockedAllocator;
 
-    PiOS::PiOS piOS(mockedAllocator, mockedScheduler);
+    Pi piOS(mockedAllocator, mockedScheduler);
     PiOSHolder::choosePiOSImplementation(&piOS);
 
     ASSERT_EQ(Context::mStartUpFunction, nullptr);

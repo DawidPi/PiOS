@@ -6,8 +6,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include "Mocks.hpp"
-#include <PiOS.hpp>
-#include <RealTimeTask.hpp>
+#include <Pi.hpp>
 
 using namespace PiOS;
 
@@ -19,7 +18,7 @@ TEST_F(PiOSHolderTest, basicTests) {
     SchedulerMock scheduler;
     AllocatorMock allocator;
 
-    PiOS::PiOS piOS(allocator, scheduler);
+    Pi piOS(allocator, scheduler);
 
     PiOSHolder::choosePiOSImplementation(&piOS);
     ASSERT_EQ(PiOSHolder::getInstance(), &piOS);
