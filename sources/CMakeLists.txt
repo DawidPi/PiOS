@@ -9,3 +9,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic")
 
 add_subdirectory(Algorithms)
 add_subdirectory(PiOS)
+if (PiOS_BUILD_NEW_OPERATOR)
+    add_subdirectory(AllocationOperators)
+endif ()

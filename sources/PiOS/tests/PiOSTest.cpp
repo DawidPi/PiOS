@@ -94,7 +94,7 @@ TEST_F(PiOSTest, exitAndStartUPCalled) {
     AllocatorMock mockedAllocator;
 
     Pi piOS(mockedAllocator, mockedScheduler);
-    PiOSHolder::choosePiOSImplementation(&piOS);
+    PiOSHolder::choosePiImplementation(&piOS);
 
     ASSERT_EQ(Context::mStartUpFunction, nullptr);
 

@@ -124,6 +124,8 @@ namespace PiOS {
 
         void removeFromQueue(const FreeBlockHeader *blockToRemove) const;
     };
+
+    using DefaultTLSF=TLSF<>;
 }
 
 #include "TLSFImpl.hpp"

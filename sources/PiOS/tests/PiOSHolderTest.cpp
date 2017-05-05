@@ -20,6 +20,6 @@ TEST_F(PiOSHolderTest, basicTests) {
 
     Pi piOS(allocator, scheduler);
 
-    PiOSHolder::choosePiOSImplementation(&piOS);
+    PiOSHolder::choosePiImplementation(&piOS);
     ASSERT_EQ(PiOSHolder::getInstance(), &piOS);
 }
