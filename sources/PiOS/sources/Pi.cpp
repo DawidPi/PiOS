@@ -9,7 +9,7 @@
 using namespace PiOS;
 
 
-void PiOSHolder::choosePiOSImplementation(Pi *piObject) {
+void PiOSHolder::choosePiImplementation(Pi *piObject) {
     mInstance = piObject;
 }
 

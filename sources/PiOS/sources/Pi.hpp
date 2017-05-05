@@ -38,7 +38,7 @@ namespace PiOS {
 
     class PiOSHolder {
     public:
-        static void choosePiOSImplementation(Pi *piObject);
+        static void choosePiImplementation(Pi *piObject);
 
         static Pi *getInstance();
 
