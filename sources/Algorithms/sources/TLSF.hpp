@@ -64,7 +64,7 @@ namespace PiOS {
         static constexpr std::size_t SL_SIZE = pow(2, SL_BITS);
 
         constexpr static unsigned int roundBlockSize(unsigned int size) {
-            MsbLsb msbCalc;
+            MsbLsb msbCalc = MsbLsb();
             auto idx = msbCalc.calculateMSB(size);
             idx = std::max(idx, 0);
             if (static_cast<unsigned int>(1 << idx) == size)

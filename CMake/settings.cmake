@@ -10,6 +10,8 @@ MACRO(SUBDIRLIST result curdir)
     SET(${result} ${dirlist})
 ENDMACRO()
 
+set(PiOS_PLATFORM_TYPE "testArch" CACHE STRING
+        "Platform, on which PiOS is to be used")
 SUBDIRLIST(AVAILABLE_PLATFLORMS "${CMAKE_SOURCE_DIR}/sources/PiOS/hardware")
 set_property(CACHE PiOS_PLATFORM_TYPE PROPERTY STRINGS ${AVAILABLE_PLATFLORMS})
 

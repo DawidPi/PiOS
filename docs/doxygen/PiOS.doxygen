@@ -5,4 +5,5 @@ STRIP_FROM_PATH        = @PROJECT_SOURCE_DIR@ \
 INPUT                  = @PROJECT_SOURCE_DIR@ \
                          @PROJECT_BINARY_DIR@
 FILE_PATTERNS          = *.hpp
+EXCLUDE_PATTERNS =     */tests/*
 RECURSIVE              = YES

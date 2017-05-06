@@ -25,6 +25,7 @@ FUNCTION(downloadGtest)
             LOG_BUILD ON
             )
 
+    set(CMAKE_CXX_STANDARD_REQUIRED 11)
     add_library(gtest UNKNOWN IMPORTED)
     add_library(gtest_main UNKNOWN IMPORTED)
     add_library(gmock UNKNOWN IMPORTED)
