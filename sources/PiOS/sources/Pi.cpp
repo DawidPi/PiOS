@@ -8,7 +8,6 @@
 
 using namespace PiOS;
 
-
 void PiOSHolder::choosePiImplementation(Pi *piObject) {
     mInstance = piObject;
 }
@@ -27,28 +26,16 @@ Pi::Pi(DynamicAllocator &allocator, Scheduler &scheduler) :
 
 void Pi::timeTick() {
     mScheduler.timeTick(++mTime);
-    setupTaskContext();
 }
 
-void Pi::addTask(RealTimeTask &&task) {
-    mScheduler.addRealTimeTask(std::forward<RealTimeTask>(task));
-    setupTaskContext();
+void Pi::addTask(RealTimeTask *task) {
+    mScheduler.addRealTimeTask(task);
 }
 
 DynamicAllocator &Pi::allocator() {
     return mAllocator;
 }
 
-void Pi::setupTaskContext() {
-    Task &task = mScheduler.fetchNextTask();
-
-    if (&task != mCurrentTask) {
-        mCurrentTask = &task;
-        scheduler().setCurrentJob(mCurrentTask->job());
-
-        if (mCurrentTask != nullptr)
-            mCurrentTask->abort();
-
-        task.start();
-    }
+void Pi::setBackgroundTask(Task *task) {
+    mScheduler.setBackgroundTask(task);
 }

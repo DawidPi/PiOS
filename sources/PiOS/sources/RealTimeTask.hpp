@@ -42,11 +42,11 @@ namespace PiOS {
              * @param rhs Right Hand Side of comparison
              * @return Returns true if lhs is less than rhs, false otherwise.
              */
-            bool operator()(const RealTimeTask &lhs, const RealTimeTask &rhs) {
+            bool operator()(PiOS::Time rhs, const RealTimeTask *lhs) {
                 if (mCompareType == RELEASE_TIME)
-                    return lhs.releaseTime() < rhs.releaseTime();
+                    return lhs->releaseTime() > rhs;
                 else
-                    return lhs.deadline() < rhs.deadline();
+                    return lhs->deadline() > rhs;
             }
 
         private:
@@ -80,13 +80,15 @@ namespace PiOS {
          * \brief Allows to get release time of the Task.
          * @return Release time of the Task.
          */
-        const Time &releaseTime() const { return mReleaseTime; }
+        Time & releaseTime() { return mReleaseTime; }
+        const Time & releaseTime() const { return mReleaseTime; }
 
         /*!
          * \brief Allows to get deadline time of the Task.
          * @return Deadline time of the Task.
          */
-        const Time &deadline() const { return mDeadline; }
+        Time & deadline() { return mDeadline; }
+        const Time & deadline() const { return mDeadline; }
 
     private:
         Time mDeadline;

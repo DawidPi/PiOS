@@ -16,11 +16,13 @@ set(HEADERS
         Time.hpp
         DynamicAllocator.hpp
         Scheduler.hpp
-        ContextInterface.hpp CommonTypes.hpp ../tests/Mocks.hpp)
+        ContextInterface.hpp
+        CommonTypes.hpp
+        ../tests/Mocks.hpp)
 
 add_library(${PROJECT_NAME} STATIC ${SOURCES} ${HEADERS})
-target_link_libraries(${PROJECT_NAME} hardware)
-target_include_directories(${PROJECT_NAME} PUBLIC "../hardware/${PiOS_PLATFORM_TYPE}")
+target_link_libraries(${PROJECT_NAME} PUBLIC hardware)
+target_include_directories(${PROJECT_NAME} PUBLIC "./")
 target_compile_options(${PROJECT_NAME} PRIVATE "-Weffc++")
 
 install(FILES ${HEADERS} DESTINATION include/PiOS)

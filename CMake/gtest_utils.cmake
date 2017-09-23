@@ -17,6 +17,8 @@ FUNCTION(downloadGtest)
             GIT_REPOSITORY https://github.com/google/googletest.git
             GIT_TAG master
             INSTALL_COMMAND ""
+            UPDATE_COMMAND ""
+            PREFIX "googletest"
 
             SOURCE_DIR "${CMAKE_BINARY_DIR}/3rdParty/gtest-src"
             BINARY_DIR "${CMAKE_BINARY_DIR}/3rdParty/gtest-build"

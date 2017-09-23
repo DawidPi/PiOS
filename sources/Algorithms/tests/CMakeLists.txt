@@ -11,4 +11,5 @@ set(SOURCES
         BitSliceCalculatorTest.cpp
         TLSFTest.cpp)
 
+include_directories(SYSTEM ${GTEST_INCLUDE} ${GMOCK_INCLUDE})
 enable_gtest("${SOURCES}" Algorithms)

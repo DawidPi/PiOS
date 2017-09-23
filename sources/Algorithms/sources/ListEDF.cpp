@@ -5,71 +5,78 @@
 #include "ListEDF.hpp"
 #include <algorithm>
 #include <cassert>
-#include <iostream>
 
 PiOS::ListEDF::ListEDF(DeadlineCallback deadlineCallback, DeadlineCallback postFailCallback) :
         EDF(deadlineCallback, postFailCallback),
         mRTUnreleasedTasks(),
-        mRTTasksList(),
-        mBackgroundTask([]() {}, Context::minStackSize),
+        mRTReadyTasksList(),
+        mBackgroundTask(nullptr),
         mCurrentTime(0),
         mBackgroundIsPending(false),
-        mPendingRTTask(mRTTasksList.end()) {}
+        mPendingRTTask(mRTReadyTasksList.end()) {}
 
 
 void PiOS::ListEDF::timeTick(const PiOS::Time &newTime) {
     assert(newTime >= mCurrentTime);
 
-    bool shouldRTTaskBeUpdated = not isPendingTaskValid();
+    bool pendingTaskIsValid = isPendingTaskValid();
+    bool shouldRTTaskBeUpdated = not pendingTaskIsValid;
     updateCurrentTime(newTime);
 
     auto lastItem = findLastInvalidWaitingTask(newTime);
-    std::for_each(mRTUnreleasedTasks.begin(), lastItem, [this](auto &elem) { this->addRealTimeTask(std::move(elem)); });
+    std::for_each(mRTUnreleasedTasks.begin(), lastItem, [this](auto &elem) {
+        mRTReadyTasksList.push_front(elem);
+    });
+
     mRTUnreleasedTasks.erase(mRTUnreleasedTasks.begin(), lastItem);
 
-    if (shouldRTTaskBeUpdated)
-        mPendingRTTask = mRTTasksList.end();
+    if (shouldRTTaskBeUpdated){
+        mPendingRTTask = mRTReadyTasksList.end();
+    }
 
-    if (newTime > mRTTasksList.begin()->deadline()) {
+    if (pendingTaskIsValid and newTime > (*mPendingRTTask)->deadline()) {
         mDeadlineFailFallback();
         mRTUnreleasedTasks.clear();
-        mRTTasksList.clear();
+        mRTReadyTasksList.clear();
         mPostFailCallback();
     }
 }
 
-void PiOS::ListEDF::addRealTimeTask(RealTimeTask &&task) {
-    assert(task.releaseTime() < task.deadline());
-    assert(task.deadline() > mCurrentTime);
+void PiOS::ListEDF::addRealTimeTask(RealTimeTask *task) {
+    assert(task->releaseTime() < task->deadline());
+    assert(task->deadline() > mCurrentTime);
 
     bool shouldRTTaskBeUpdated = not isPendingTaskValid();
 
-    if (task.releaseTime() > mCurrentTime) {
-        auto placeToInsert = std::upper_bound(mRTUnreleasedTasks.begin(), mRTUnreleasedTasks.end(), task,
+    if (task->releaseTime() > mCurrentTime) {
+        auto placeToInsert = std::upper_bound(mRTUnreleasedTasks.begin(), mRTUnreleasedTasks.end(), task->deadline(),
                                               RealTimeTask::RTTaskComparator(
                                                       RealTimeTask::RTTaskComparator::RELEASE_TIME));
-        mRTUnreleasedTasks.emplace(placeToInsert, std::forward<RealTimeTask>(task));
+        mRTUnreleasedTasks.emplace(placeToInsert, task);
     } else {
-        auto placeToInsert = std::upper_bound(mRTTasksList.begin(), mRTTasksList.end(), task,
-                                              RealTimeTask::RTTaskComparator(RealTimeTask::RTTaskComparator::DEADLINE));
-        mRTTasksList.emplace(placeToInsert, std::forward<RealTimeTask>(task));
+        mRTReadyTasksList.push_front(task);
     }
 
-    if (shouldRTTaskBeUpdated)
-        mPendingRTTask = mRTTasksList.end();
+    if (shouldRTTaskBeUpdated){
+        mPendingRTTask = mRTReadyTasksList.end();
+    }
 }
 
 
-PiOS::Task &PiOS::ListEDF::fetchNextTask() {
-    if (mRTTasksList.empty()) {
+PiOS::Task *PiOS::ListEDF::fetchNextTask() {
+    if (mRTReadyTasksList.empty()) {
         mBackgroundIsPending = true;
         return mBackgroundTask;
     }
 
     mBackgroundIsPending = false;
     if (not isPendingTaskValid()) {
-        mPendingRTTask = mRTTasksList.begin();
-        return *mRTTasksList.begin();
+        auto closestDeadlineTask = std::min_element(mRTReadyTasksList.begin(), mRTReadyTasksList.end(),
+                                                    [](const RealTimeTask *el1, const RealTimeTask *el2) {
+                                                        return el1->deadline() < el2->deadline();
+                                                    });
+        mPendingRTTask = closestDeadlineTask;
+        return *(closestDeadlineTask);
     }
 
     return *mPendingRTTask;
@@ -79,20 +86,18 @@ void PiOS::ListEDF::finishPendingTask() {
     if (mBackgroundIsPending)
         return;
 
-    const bool pendingTaskCanBeErased = not mRTTasksList.empty() and mPendingRTTask != mRTTasksList.end();
+    const bool pendingTaskCanBeErased = not mRTReadyTasksList.empty() and mPendingRTTask != mRTReadyTasksList.end();
     if (pendingTaskCanBeErased) {
-        mRTTasksList.erase(mPendingRTTask);
-        mPendingRTTask = mRTTasksList.end();
+        mRTReadyTasksList.erase(mPendingRTTask);
+        mPendingRTTask = mRTReadyTasksList.end();
     }
 }
 
-std::list<PiOS::RealTimeTask>::iterator PiOS::ListEDF::findLastInvalidWaitingTask(const PiOS::Time &newTime) {
-    auto emptyJob = []() {};
-    PiOS::RealTimeTask compareTask(emptyJob, newTime, newTime, 0);
-    auto lastItem = std::upper_bound(mRTUnreleasedTasks.begin(), mRTUnreleasedTasks.end(), compareTask,
+PiOS::ListEDF::ListType<PiOS::RealTimeTask*>::iterator PiOS::ListEDF::findLastInvalidWaitingTask(const PiOS::Time &newTime) {
+    auto lastItem = std::upper_bound(mRTUnreleasedTasks.begin(), mRTUnreleasedTasks.end(), newTime,
                                      PiOS::RealTimeTask::RTTaskComparator(
                                              PiOS::RealTimeTask::RTTaskComparator::RELEASE_TIME));
     return lastItem;
 }
 
-bool PiOS::ListEDF::isPendingTaskValid() const { return (this->mPendingRTTask != this->mRTTasksList.end()); }
+bool PiOS::ListEDF::isPendingTaskValid() const { return this->mPendingRTTask != this->mRTReadyTasksList.end(); }

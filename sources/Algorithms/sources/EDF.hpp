@@ -5,7 +5,7 @@
 #ifndef PROJECT_EDF_H
 #define PROJECT_EDF_H
 
-#include <array>
+//#include <array>
 #include <functional>
 #include <Scheduler.hpp>
 #include "RealTimeTask.hpp"
@@ -46,7 +46,7 @@ namespace PiOS {
          * executed, when real time queue is empty.
          * @param task
          */
-        virtual void setBackgroundTask(Task &&task) = 0;
+        virtual void setBackgroundTask(Task *task) = 0;
         virtual ~EDF() {};
 
     protected:

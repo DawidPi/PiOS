@@ -10,7 +10,7 @@
 PiOS::Task::Task(TaskJob job, std::size_t stackSize, StartUp startUpFunction) :
         mJob(job),
         mStackpointer(::operator new(stackSize)),
-        mContext(mStackpointer, job),
+        mContext((char*)mStackpointer + stackSize, job),
         mStartUp(startUpFunction) {
 }
 
@@ -18,16 +18,18 @@ PiOS::Task::Task(::PiOS::Task &&rhs) :
         mJob(rhs.mJob),
         mStackpointer(rhs.mStackpointer),
         mContext(rhs.mContext),
-        mStartUp(rhs.startUpFunction()) {
+        mStartUp(rhs.startUpFunction()),
+        mFirstRun(rhs.mFirstRun){
     rhs.mStackpointer = nullptr;
 }
 
 void PiOS::Task::start() {
-    mContext.startContext(startUpFunction());
-}
-
-void PiOS::Task::abort() {
-    mContext.saveContext();
+    //todo check if task was launched before
+    // (everytime started from the beginnign)
+    if(mFirstRun){
+        mFirstRun = false;
+        mContext.setProgramCounter(reinterpret_cast<uint64_t>(startUpFunction()));
+    }
 }
 
 PiOS::Task::~Task() {
@@ -42,6 +44,7 @@ const ::PiOS::Task &PiOS::Task::operator=(Task &&rhs) {
     rhs.mStackpointer = nullptr;
 
     mContext = rhs.mContext;
+    mFirstRun = rhs.mFirstRun;
 
     return *this;
 }

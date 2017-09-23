@@ -6,14 +6,17 @@
 #define PROJECT_HEAPEDF_HPP
 
 #include "EDF.hpp"
-#include <list>
 #include "Task.hpp"
+#include <list>
 
 namespace PiOS {
     /*!
      * \brief Implementation of \ref EDF interface using Lists for managing queues.
      */
     class ListEDF : public EDF {
+        template<typename T>
+        using ListType = std::list<T>;
+        using TaskList = ListType<PiOS::RealTimeTask*>;
     public:
         /*!
          * \brief Constructor. Computational complexity O(1).
@@ -34,7 +37,7 @@ namespace PiOS {
          * Method, when executed, will update EDF's local time.
          * Method also checks whether tasks should be released,
          * and if so, removes from waiting queue and appends tasks
-         * to ready queue. This operation is O(m*n) complexity, where
+         * to ready queue. This operation is O(m) complexity, where
          * m is umber of tasks in waiting state and n is number
          * of tasks in ready state.
          *
@@ -53,14 +56,15 @@ namespace PiOS {
          *
          * If release time is greater, than current time. Task will be added
          * to the waiting queue, otherwise to the ready queue. Complexity
-         * of the operation is O(n), where n is number of tasks in the queue
+         * of the operation is O(1)(in case of ready tasks) or O(n)(in case of waiting tasks),
+         *  where n is number of tasks in the queue
          * (queue of ready or waiting tasks, depending on mentioned condition above.)
          *
          * @param task RealTimeTask, which is to be added. It's release time, cannot
          * be smaller, than deadline time and deadline cannot be smaller, than current
          * system time.
          */
-        void addRealTimeTask(RealTimeTask &&task) override;
+        void addRealTimeTask(RealTimeTask *task) override;
 
         /*!
          * \brief Sets task, that is to be executed, when no other task is left in the
@@ -70,7 +74,7 @@ namespace PiOS {
          * @param task Background task, that is to be executed, when there is no ready
          * RealTimeTask set.
          */
-        void setBackgroundTask(Task &&task) override { mBackgroundTask = std::move(task); }
+        void setBackgroundTask(Task *task) override { mBackgroundTask = task; }
 
         /*!
          * \brief Indicates, that last fetched Task is finished, and therefore should be removed
@@ -79,25 +83,26 @@ namespace PiOS {
         void finishPendingTask() override;
 
         /*!
-         * \brief Fetches next task to be executed.
+         * \brief Fetches next task to be executed. Takes O(n) time complexity, where n is number of tasks
          * @return Task, which is meant to be executed.
          */
-        Task &fetchNextTask() override;
+        Task* fetchNextTask() override;
 
     private:
-        std::list<RealTimeTask> mRTUnreleasedTasks;
-        std::list<RealTimeTask> mRTTasksList;
-        Task mBackgroundTask;
+        TaskList mRTUnreleasedTasks;
+        TaskList mRTReadyTasksList;
+        Task* mBackgroundTask;
         Time mCurrentTime;
         bool mBackgroundIsPending;
-        std::list<PiOS::RealTimeTask>::iterator mPendingRTTask;
+        using ListIterator = TaskList::iterator;
+        ListIterator mPendingRTTask;
 
     private:
         bool isPendingTaskValid() const;
 
         void updateCurrentTime(const PiOS::Time &newTime) { mCurrentTime = newTime; }
 
-        std::list<PiOS::RealTimeTask>::iterator findLastInvalidWaitingTask(const PiOS::Time &newTime);
+        TaskList::iterator findLastInvalidWaitingTask(const PiOS::Time &newTime);
     };
 }
 

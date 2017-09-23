@@ -27,20 +27,20 @@ namespace PiOS {
          * \brief gives information about beginning of the allocated memory
          * \return pointer to the beginning of the allocated memory.
          */
-        void *begin() { return mBegin; }
+        void *begin() const { return mBegin; }
 
         /*!
          * \brief gives information about end of the allocated memory, so that
          * begin() + size = end().
          * \return pointer to the byte after last allocated byte.
          */
-        void *end() { return mEnd; }
+        void *end() const { return mEnd; }
 
         /*!
          * \brief Gives information about the size of managed memory in bytes.
          * @return Memory size in bytes.
          */
-        std::size_t size() { return mSize; }
+        std::size_t size() const { return mSize; }
 
     private:
         void *mBegin;

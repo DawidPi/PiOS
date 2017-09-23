@@ -3,7 +3,6 @@
 //
 
 #include "SimpleBuddy.hpp"
-#include <iostream>
 
 namespace PiOS {
 

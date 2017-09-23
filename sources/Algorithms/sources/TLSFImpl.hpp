@@ -10,7 +10,7 @@
 using namespace PiOS;
 
 template<unsigned int SL_BITS, typename BitfieldType>
-TLSF<SL_BITS, BitfieldType>::TLSF(MemorySpace memoryToManage) :
+TLSF<SL_BITS, BitfieldType>::TLSF(const MemorySpace &memoryToManage) :
         mMetadata(*new(memoryToManage.begin()) Metadata(
                 MemorySpace(static_cast<char *>(memoryToManage.begin()) + sizeof(Metadata), memoryToManage.end()))),
         mManagedMemorySpace(memoryToManage) {

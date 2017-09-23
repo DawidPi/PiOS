@@ -16,16 +16,18 @@ public:
     MOCK_METHOD1(timeTick, void(
             const PiOS::Time&));
 
-    void addRealTimeTask(PiOS::RealTimeTask &&rval) {
+    void addRealTimeTask(PiOS::RealTimeTask *rval) {
         addRealTimeTaskProxy(rval);
     }
 
     MOCK_METHOD1(addRealTimeTaskProxy, void(
-            PiOS::RealTimeTask &));
+            PiOS::RealTimeTask *));
 
-    MOCK_METHOD0(fetchNextTask, PiOS::Task & ());
+    MOCK_METHOD0(fetchNextTask, PiOS::Task * ());
 
     MOCK_METHOD0(finishPendingTask, void());
+
+    MOCK_METHOD1(setBackgroundTask, void(PiOS::Task*));
 };
 
 class AllocatorMock : public PiOS::DynamicAllocator {

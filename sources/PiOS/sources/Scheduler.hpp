@@ -27,14 +27,14 @@ namespace PiOS {
          * \brief Adds realTimeTask to the queue.
          * @param task Task to be added.
          */
-        virtual void addRealTimeTask(RealTimeTask &&task)=0;
+        virtual void addRealTimeTask(RealTimeTask *task)=0;
 
         /*!
          * \brief Fetches next task from the Scheduler. If RealTime queue
          * is empty, then background task is executed.
          * @return Task, that should be executed
          */
-        virtual Task &fetchNextTask()=0;
+        virtual Task *fetchNextTask()=0;
 
         /*!
          * \brief Informs Scheduler, that last task is finished. Should delete
@@ -55,6 +55,8 @@ namespace PiOS {
          * \param newJob new job, that is to be executed by startUp function.
          */
         void setCurrentJob(Task::TaskJob newJob) { mCurrentJob = newJob; }
+
+        virtual void setBackgroundTask(Task* task)=0;
 
         /*!
          * \brief Destructor

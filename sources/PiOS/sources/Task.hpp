@@ -53,11 +53,6 @@ namespace PiOS {
         void start();
 
         /*!
-         * \brief Suspends execution of the task.
-         */
-        void abort();
-
-        /*!
          * \brief Fetches functional object, that is executed along with the task.
          * \return Job, which is to be executed.
          */
@@ -74,6 +69,8 @@ namespace PiOS {
          */
         static void defaultStartUp();
 
+        PiOS::Context& context(){return mContext;}
+
         /*!
          * \brief Destructor.
          */
@@ -87,6 +84,7 @@ namespace PiOS {
 
         static_assert(implementsContextInterface<PiOS::Context>::value,
                       "Context interface is not implemented properly. Please see testArch's Context for more info");
+        bool mFirstRun = true;
     };
 }
 

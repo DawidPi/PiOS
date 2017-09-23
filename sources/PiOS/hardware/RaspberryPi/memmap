@@ -1,0 +1,70 @@
+MEMORY
+{
+    ram : ORIGIN = 0x10000, LENGTH = 64M
+}
+
+EXTERN(_start)
+EXTERN(_exit)
+EXTERN(_sbrk)
+EXTERN(_kill)
+EXTERN(_getpid)
+EXTERN(_write)
+EXTERN(_close)
+EXTERN(_fstat)
+EXTERN(_isatty)
+EXTERN(_lseek)
+EXTERN(_read)
+EXTERN(uart_send)
+
+__heap_size__ = 50M;
+__static_heap_size__ = 1M;
+
+__stack_size = 1K;
+
+__exidx_start = 0;
+__exidx_end = 0;
+
+SECTIONS
+{
+    .text : { *(.start) *(.text*) *(.eh_frame) } > ram
+    .bss : {
+        __bss_start = .;
+        *(.bss*)
+        __bss_end = .;} > ram
+
+    . = ALIGN(4);
+    .init_array : {
+        __init_array_start = .;
+        KEEP (*(.init_array*))
+        __init_array_end = .;
+    } > ram
+
+    .irq_stack : {
+        . = . + __stack_size ;
+        __irq_stack_top = . ;
+    } > ram
+
+    .system_stack : {
+        . = . + __stack_size ;
+        __system_stack_top = . ;
+    } > ram
+
+    .svc_stack : {
+        . = . + __stack_size ;
+        __svc_stack_top = . ;
+    } > ram
+
+    .static_heap : {
+        __static_heap_start__ = . ;
+        . = . + __static_heap_size__ ;
+        __static_heap_end__ = . ;
+    } > ram
+
+    .heap : {
+        __heap_start__ = . ;
+        . = . + __heap_size__ ;
+         __heap_end__ = . ;
+    } > ram
+
+    .noinit (NOLOAD) : { *(.noinit*) } > ram
+}

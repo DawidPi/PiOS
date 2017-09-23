@@ -33,7 +33,7 @@ namespace PiOS {
          *
          * \param memoryToManage MemorySpace representing managed memory heap.
          */
-        TLSF(MemorySpace memoryToManage);
+        TLSF(const MemorySpace &memoryToManage);
 
         /*!
          * \brief Allocates chunk of memory, which is no smaller than provided memory size.

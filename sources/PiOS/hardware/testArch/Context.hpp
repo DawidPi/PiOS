@@ -6,6 +6,7 @@
 #define PROJECT_CONTEXT_HPP
 
 #include <cstddef>
+#include <cstdint>
 #include "../../sources/ContextInterface.hpp"
 #include "../../sources/CommonTypes.hpp"
 
@@ -16,19 +17,22 @@ namespace PiOS {
     public:
         static constexpr std::size_t minStackSize = 47ull;
 
-        using PCPointer = void (*)();
+        using PCPointer = void(*)();
 
         Context(void *stackPointer, PCPointer function) :
                 mStackPointer(stackPointer),
-                mPC(function) {}
+                mPC(reinterpret_cast<uint64_t>(function)) {}
 
         void startContext(StartUp function);
 
         void saveContext();
 
+        std::uint32_t programCounter(){return static_cast<std::uint32_t>(mPC);}
+        void setProgramCounter(std::uint32_t){}
+
     private:
         void *mStackPointer;
-        PCPointer mPC;
+        std::uint64_t mPC;
 
     public:
         static StartUp mStartUpFunction;

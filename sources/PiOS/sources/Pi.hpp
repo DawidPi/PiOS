@@ -21,19 +21,21 @@ namespace PiOS {
 
         void timeTick();
 
-        void addTask(RealTimeTask &&task);
+        void addTask(RealTimeTask *task);
+
+        void setBackgroundTask(Task *task);
 
         DynamicAllocator &allocator();
 
         Scheduler &scheduler() { return mScheduler; };
 
+        Time currentTime(){return mTime;}
+
     private:
-        Task *mCurrentTask = nullptr;
         DynamicAllocator &mAllocator;
         Scheduler &mScheduler;
         Time mTime;
 
-        void setupTaskContext();
     };
 
     class PiOSHolder {
