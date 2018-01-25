@@ -2,6 +2,7 @@ project(Algorithms)
 
 set(CMAKE_CXX_STANDARD 14)
 
+#todo implement your own TLSF, as this one is on virus GPL licence
 set(EXTERNAL
         ../external/TLSF-2.4.6/src/tlsf.c
         ../external/TLSF-2.4.6/src/tlsf.h)
