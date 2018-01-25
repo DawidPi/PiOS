@@ -12,7 +12,7 @@ void *tlsf_malloc(size_t size);
 void tlsf_free(void *ptr);
 void destroy_memory_pool(void *ptr);
 
-};
+}
 
 TLSFExternal::TLSFExternal(void *memoryBegin, void *memoryEnd) : pool(memoryBegin) {
     std::size_t memorySize = reinterpret_cast<char*>(memoryEnd) - reinterpret_cast<char*>(memoryBegin);

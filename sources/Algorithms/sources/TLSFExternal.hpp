@@ -11,6 +11,8 @@
 class TLSFExternal : public PiOS::DynamicAllocator{
 public:
     TLSFExternal(void *memoryBegin, void *memoryEnd);
+    TLSFExternal(const TLSFExternal&) = delete;
+    TLSFExternal& operator=(const TLSFExternal&)=delete;
 
     PiOS::MemorySpace allocate(std::size_t size) override;
 
