@@ -8,7 +8,8 @@ set(SOURCES
         MSBLSBCalculatorTest.cpp
         BitSliceCalculatorTest.cpp
         TLSFTest.cpp
-        PowerTest.cpp)
+        PowerTest.cpp
+        ListTest.cpp)
 
 include_directories(SYSTEM ${GTEST_INCLUDE} ${GMOCK_INCLUDE})
 enable_gtest("${SOURCES}" Algorithms)

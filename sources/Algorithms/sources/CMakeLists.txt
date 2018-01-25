@@ -20,7 +20,8 @@ set(HEADERS
         TLSF.hpp
         MsbLsb.hpp
         BitSlice.hpp
-        TLSFExternal.hpp)
+        TLSFExternal.hpp
+        List.hpp)
 
 add_library(${PROJECT_NAME} STATIC ${EXTERNAL} ${SOURCES} ${HEADERS})
 target_include_directories(${PROJECT_NAME} PUBLIC "./")
