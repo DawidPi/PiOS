@@ -7,19 +7,12 @@ set(EXTERNAL
         ../external/TLSF-2.4.6/src/tlsf.h)
 
 set(SOURCES
-        SimpleBuddy.cpp
-        FixedSizeBinaryTree.cpp
-        SimpleBuddyFactory.cpp
         ListEDF.cpp
         BitSlice.cpp
         TLSFExternal.cpp)
 
 set(HEADERS
-        SimpleBuddy.hpp
-        FixedSizeBinaryTreeImpl.hpp
-        FixedSizeBinaryTree.hpp
         power.hpp
-        SimpleBuddyFactory.hpp
         EDF.hpp
         ListEDF.hpp
         TLSFImpl.hpp
