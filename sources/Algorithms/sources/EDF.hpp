@@ -5,7 +5,6 @@
 #ifndef PROJECT_EDF_H
 #define PROJECT_EDF_H
 
-//#include <array>
 #include <functional>
 #include <Scheduler.hpp>
 #include "RealTimeTask.hpp"

@@ -7,6 +7,7 @@
 
 #include "EDF.hpp"
 #include "Task.hpp"
+#include "List.hpp"
 #include <list>
 
 namespace PiOS {
