@@ -44,9 +44,9 @@ void *operator new(std::size_t sizeInBytes, const std::nothrow_t &) noexcept {
  * \param sizeInBytes Size to allocate
  * \return Pointer to the beginning of the allocated block. Returns nullptr, when allocation fails.
  */
-void *operator new(std::size_t sizeInBytes) {
-    return operator new(sizeInBytes, std::nothrow);
-}
+//void *operator new(std::size_t sizeInBytes) {
+//    return operator new(sizeInBytes, std::nothrow);
+//}
 
 /*!
  * \brief Operator delete, that uses PiOSHolder monostate to deallocate the memory.
