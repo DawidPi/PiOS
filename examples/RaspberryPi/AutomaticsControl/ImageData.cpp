@@ -202,7 +202,7 @@ void ImageData::printValue(const int32_t valueToPrint, int32_t placeToPrint) {
     auto firstDigit = absValueToPrint / 10;
     auto secondDigit = absValueToPrint % 10;
 
-    auto yOffset = placeToPrint;
+    auto yOffset = static_cast<uint32_t>(placeToPrint);
     if(yOffset > IMAGE_HEIGHT/2 - FONT_HEIGHT and yOffset <= IMAGE_HEIGHT/2)
         yOffset=IMAGE_HEIGHT/2 - FONT_HEIGHT;
     else if (yOffset > IMAGE_HEIGHT/2)
@@ -213,7 +213,7 @@ void ImageData::printValue(const int32_t valueToPrint, int32_t placeToPrint) {
 }
 
 void ImageData::printFont(int32_t xOffset, int32_t yOffset, const FontStore &font) {
-    for (int32_t currentY = 0; currentY < FONT_HEIGHT; ++currentY) {
+    for (uint32_t currentY = 0; currentY < FONT_HEIGHT; ++currentY) {
         for (uint32_t currentX = 0; currentX < FONT_WIDTH; ++currentX) {
             if (font[currentY][currentX]) {
                 changePixel(xOffset + currentX, yOffset + currentY);

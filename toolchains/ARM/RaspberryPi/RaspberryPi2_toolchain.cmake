@@ -35,8 +35,11 @@ set(COMPILER_CPP_SUPPORT
 set(COMPILER_ARCH_FLAGS
         "-marm -mfloat-abi=soft")
 
-set(COMPILER_FLAGS
+set(COMPILER_FLAGS_CPP
         "${COMPILER_NO_OS_FLAGS} ${COMPILER_CPP_SUPPORT} ${COMPILER_ARCH_FLAGS} ${COMPILER_NO_RTTI_EXCEPTIONS_FLAGS} ${COMPILER_DEAD_CODE_REMOVAL_FLAGS}")
+
+set(COMPILER_FLAGS
+        "${COMPILER_NO_OS_FLAGS} ${COMPILER_CPP_SUPPORT} ${COMPILER_ARCH_FLAGS} ${COMPILER_DEAD_CODE_REMOVAL_FLAGS}")
 
 set(CMAKE_C_FLAGS_RELEASE "-DNDEBUG ${COMPILER_OPTIMIZATIONS}" CACHE STRING "compile flags for C language" FORCE)
 set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG ${COMPILER_OPTIMIZATIONS}" CACHE STRING "compile flags for C++ language" FORCE)
@@ -47,7 +50,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "-g" CACHE STRING "compile flags for C++ language" FOR
 set(CMAKE_ASM_FLAGS_DEBUG "" CACHE STRING "compile flags for ASM language" FORCE)
 
 set(CMAKE_C_FLAGS "${COMPILER_FLAGS}" CACHE STRING "common compile flags for C language" FORCE)
-set(CMAKE_CXX_FLAGS "${COMPILER_FLAGS}" CACHE STRING "common compile flags for C++ language" FORCE)
+set(CMAKE_CXX_FLAGS "${COMPILER_FLAGS_CPP}" CACHE STRING "common compile flags for C++ language" FORCE)
 set(CMAKE_ASM_FLAGS " " CACHE STRING "common compile flags for ASM language" FORCE)
 
 #do not search path

@@ -3,8 +3,6 @@
 #include <TLSF.hpp>
 #include <Timer/Timer.hpp>
 #include <ContextAccess/BankedRegisters.hpp>
-#include <SimpleBuddy.hpp>
-#include <SimpleBuddyFactory.hpp>
 #include <TLSFExternal.hpp>
 #include "Uart/Uart.hpp"
 #include "SystemCall.hpp"

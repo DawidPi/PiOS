@@ -23,10 +23,13 @@ set(HEADERS
         TLSFExternal.hpp
         List.hpp)
 
-add_library(${PROJECT_NAME} STATIC ${EXTERNAL} ${SOURCES} ${HEADERS})
+set(EXTERNAL_LIB TLSF_EXTERNAL)
+add_library(${EXTERNAL_LIB} ${EXTERNAL})
+target_include_directories(${EXTERNAL_LIB} PUBLIC "../external/TLSF-2.4.6/src/")
+
+add_library(${PROJECT_NAME} STATIC ${SOURCES} ${HEADERS})
 target_include_directories(${PROJECT_NAME} PUBLIC "./")
-target_include_directories(${PROJECT_NAME} PRIVATE "../external/TLSF-2.4.6/src")
-target_link_libraries(${PROJECT_NAME} PUBLIC PiOS)
+target_link_libraries(${PROJECT_NAME} PUBLIC PiOS ${EXTERNAL_LIB})
 target_compile_options(${PROJECT_NAME} PRIVATE "-Weffc++")
 
 install(FILES ${HEADERS} DESTINATION include/PiOS/Algorithms/)

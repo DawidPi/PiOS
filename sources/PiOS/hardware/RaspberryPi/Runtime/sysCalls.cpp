@@ -30,7 +30,7 @@ int _open(const char *, int, ...) {
     return 0;
 }
 
-caddr_t _sbrk(int incr) {
+caddr_t _sbrk(int) {
     return nullptr;
 }
 
