@@ -18,8 +18,9 @@ set(COMPILER_NO_OS_FLAGS
 set(COMPILER_NO_OS_FLAGS_NOSTDLIB
         "-nostdlib -nostartfiles -ffreestanding -nodefaultlibs -Wall")
 
-set(COMPILER_NO_RTTI_EXCEPTIONS_FLAGS
+set(COMPILER_NO_RTTI_EXCEPTIONS_FLAGS_CPP
         "-fno-rtti -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables")
+
 
 set(COMPILER_DEAD_CODE_REMOVAL_FLAGS
         "-fdata-sections -ffunction-sections -Wl,--gc-sections")
@@ -36,7 +37,10 @@ set(COMPILER_ARCH_FLAGS
         "-marm -mfloat-abi=soft")
 
 set(COMPILER_FLAGS
-        "${COMPILER_NO_OS_FLAGS} ${COMPILER_CPP_SUPPORT} ${COMPILER_ARCH_FLAGS} ${COMPILER_NO_RTTI_EXCEPTIONS_FLAGS} ${COMPILER_DEAD_CODE_REMOVAL_FLAGS}")
+        "${COMPILER_NO_OS_FLAGS} ${COMPILER_CPP_SUPPORT} ${COMPILER_ARCH_FLAGS} ${COMPILER_NO_RTTI_EXCEPTIONS_FLAGS_CPP} ${COMPILER_DEAD_CODE_REMOVAL_FLAGS}")
+
+set(COMPILER_FLAGS_C
+        "${COMPILER_NO_OS_FLAGS} ${COMPILER_CPP_SUPPORT} ${COMPILER_ARCH_FLAGS} ${COMPILER_DEAD_CODE_REMOVAL_FLAGS}")
 
 set(CMAKE_C_FLAGS_RELEASE "-DNDEBUG ${COMPILER_OPTIMIZATIONS}" CACHE STRING "compile flags for C language" FORCE)
 set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG ${COMPILER_OPTIMIZATIONS}" CACHE STRING "compile flags for C++ language" FORCE)
@@ -46,7 +50,7 @@ set(CMAKE_C_FLAGS_DEBUG "-g" CACHE STRING "compile flags for C language" FORCE)
 set(CMAKE_CXX_FLAGS_DEBUG "-g" CACHE STRING "compile flags for C++ language" FORCE)
 set(CMAKE_ASM_FLAGS_DEBUG "" CACHE STRING "compile flags for ASM language" FORCE)
 
-set(CMAKE_C_FLAGS "${COMPILER_FLAGS}" CACHE STRING "common compile flags for C language" FORCE)
+set(CMAKE_C_FLAGS "${COMPILER_FLAGS_C}" CACHE STRING "common compile flags for C language" FORCE)
 set(CMAKE_CXX_FLAGS "${COMPILER_FLAGS}" CACHE STRING "common compile flags for C++ language" FORCE)
 set(CMAKE_ASM_FLAGS " " CACHE STRING "common compile flags for ASM language" FORCE)
 

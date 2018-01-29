@@ -22,11 +22,16 @@ set(HEADERS
         BitSlice.hpp
         TLSFExternal.hpp)
 
-add_library(${PROJECT_NAME} STATIC ${EXTERNAL} ${SOURCES} ${HEADERS})
+# adding external tlsf library implementation
+add_library(${PROJECT_NAME}_TLSF STATIC ${EXTERNAL})
+target_include_directories(${PROJECT_NAME}_TLSF PUBLIC "../external/TLSF-2.4.6/src")
+
+# create new library
+add_library(${PROJECT_NAME} STATIC ${SOURCES} ${HEADERS})
 target_include_directories(${PROJECT_NAME} PUBLIC "./")
-target_include_directories(${PROJECT_NAME} PRIVATE "../external/TLSF-2.4.6/src")
-target_link_libraries(${PROJECT_NAME} PUBLIC PiOS)
+target_link_libraries(${PROJECT_NAME} PUBLIC PiOS ${PROJECT_NAME}_TLSF)
 target_compile_options(${PROJECT_NAME} PRIVATE "-Weffc++")
+set_source_files_properties(${EXTERNAL} COMPILE_FLAGS "${COMPILER_FLAGS_C}")
 
 install(FILES ${HEADERS} DESTINATION include/PiOS/Algorithms/)
 install(TARGETS ${PROJECT_NAME} DESTINATION lib)
