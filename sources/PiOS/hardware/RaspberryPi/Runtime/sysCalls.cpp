@@ -70,4 +70,17 @@ void __cxa_pure_virtual() {
     exit(0);
 }
 
+//for now synchronization is not needed.
+void __sync_synchronize(){
+
+}
+
+void __cxa_guard_acquire(){
+
+}
+
+void __cxa_guard_release(){
+
+}
+
 }

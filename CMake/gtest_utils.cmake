@@ -2,13 +2,24 @@ include(ExternalProject)
 
 MACRO(enable_gtest sources dependencies)
     find_package(Threads)
+    find_library(UBSAN ubsan)
     if (PiOS_BUILD_TESTS)
         enable_testing()
         include_directories(SYSTEM ${GTEST_INCLUDE} ${GMOCK_INCLUDE})
         include_directories(../sources)
         add_executable(${PROJECT_NAME} ${sources})
-        target_link_libraries(${PROJECT_NAME} ${dependencies} Threads::Threads gtest gtest_main gmock gmock_main)
+        target_link_libraries(${PROJECT_NAME} ${dependencies} Threads::Threads gtest gtest_main gmock gmock_main
+                ${UBSAN}
+                )
         add_dependencies(${PROJECT_NAME} ${dependencies} gtest gtest_main gmock gmock_main)
+        set(CMAKE_EXE_LINKER_FLAGS "-static-libasan")
+        target_compile_options(${PROJECT_NAME} PUBLIC
+                -fsanitize=float-cast-overflow
+                -fsanitize=undefined
+                -fsanitize=float-divide-by-zero
+                -fstack-protector-all
+                -fsanitize=leak
+                )
     endif ()
 ENDMACRO()
 

@@ -21,6 +21,10 @@ extern "C" void *__stack_allocate(std::size_t size) {
     return result;
 }
 
+namespace std{
+    const nothrow_t nothrow;
+}
+
 /*!
  * \brief Operator new, that uses PiOSHolder monostate to allocate the memory.
  * Implementation does not throw, when allocation fails.
@@ -29,6 +33,14 @@ extern "C" void *__stack_allocate(std::size_t size) {
  * \return Pointer to the beginning of the allocated block. Returns nullptr, when allocation fails.
  */
 void *operator new(std::size_t sizeInBytes, const std::nothrow_t &) noexcept {
+    auto pi = PiOS::PiOSHolder::getInstance();
+    if (pi == nullptr)
+        return __stack_allocate(sizeInBytes);
+
+    return pi->allocator().allocate(sizeInBytes).begin();
+}
+
+void *operator new(std::size_t sizeInBytes) {
     auto pi = PiOS::PiOSHolder::getInstance();
     if (pi == nullptr)
         return __stack_allocate(sizeInBytes);

@@ -11,11 +11,8 @@ set(SOURCES
         )
 
 set(DEPENDENCIES
-#        PiHardware
         PiOS
-#        PiHardware
         AllocationOperators
-#        PiHardware
         )
 
 add_executable(${PROJECT_NAME} ${SOURCES})

@@ -22,9 +22,9 @@ struct Register{
     using Base = RegisterBase<BaseRegister::baseValue + offset>;
     static constexpr uint32_t baseValue = BaseRegister::baseValue + offset;
 
-    static volatile constexpr uint32_t* const address = reinterpret_cast<uint32_t *>(baseValue);
-    static uint32_t value(){return *address;}
-    static void value(uint32_t newValue){*address = newValue;}
+    static volatile constexpr auto const address = baseValue;
+    static uint32_t value(){return *reinterpret_cast<volatile uint32_t *>(address);}
+    static void value(uint32_t newValue){*reinterpret_cast<volatile uint32_t *>(address) = newValue;}
 };
 
 template<typename REGISTER>

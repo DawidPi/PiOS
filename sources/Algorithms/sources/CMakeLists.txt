@@ -16,12 +16,10 @@ set(HEADERS
         power.hpp
         EDF.hpp
         ListEDF.hpp
-        TLSFImpl.hpp
-        TLSF.hpp
         MsbLsb.hpp
         BitSlice.hpp
         TLSFExternal.hpp
-        List.hpp)
+        List.hpp bad_function_call.cpp)
 
 set(EXTERNAL_LIB TLSF_EXTERNAL)
 add_library(${EXTERNAL_LIB} ${EXTERNAL})

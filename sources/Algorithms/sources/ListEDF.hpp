@@ -16,7 +16,7 @@ namespace PiOS {
      */
     class ListEDF : public EDF {
         template<typename T>
-        using ListType = std::list<T>;
+        using ListType = List<T>;
         //todo check if can be replaced with PiOS::RealTimeTask
         using TaskList = ListType<PiOS::RealTimeTask*>;
     public:

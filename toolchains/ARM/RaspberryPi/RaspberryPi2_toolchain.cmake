@@ -24,25 +24,24 @@ set(COMPILER_NO_RTTI_EXCEPTIONS_FLAGS
 set(COMPILER_DEAD_CODE_REMOVAL_FLAGS
         "-fdata-sections -ffunction-sections -Wl,--gc-sections")
 
-#todo because of using exceptions and defining own exception functions -Os must be always enabled for compilation to succeed
 set(COMPILER_OPTIMIZATIONS
-        "-Os")
+        "-O3")
 
 set(COMPILER_CPP_SUPPORT
         "")
 
 #for cortex-a7 (RaspberryPi2) note -mfloat-abi=hard can be used as well
 set(COMPILER_ARCH_FLAGS
-        "-marm -mfloat-abi=soft")
+        "-marm -mfloat-abi=hard")
 
 set(COMPILER_FLAGS_CPP
-        "${COMPILER_NO_OS_FLAGS} ${COMPILER_CPP_SUPPORT} ${COMPILER_ARCH_FLAGS} ${COMPILER_NO_RTTI_EXCEPTIONS_FLAGS} ${COMPILER_DEAD_CODE_REMOVAL_FLAGS}")
+        "${COMPILER_NO_OS_FLAGS_NOSTDLIB} ${COMPILER_CPP_SUPPORT} ${COMPILER_ARCH_FLAGS} ${COMPILER_NO_RTTI_EXCEPTIONS_FLAGS} ${COMPILER_DEAD_CODE_REMOVAL_FLAGS}")
 
 set(COMPILER_FLAGS
         "${COMPILER_NO_OS_FLAGS} ${COMPILER_CPP_SUPPORT} ${COMPILER_ARCH_FLAGS} ${COMPILER_DEAD_CODE_REMOVAL_FLAGS}")
 
-set(CMAKE_C_FLAGS_RELEASE "-DNDEBUG ${COMPILER_OPTIMIZATIONS}" CACHE STRING "compile flags for C language" FORCE)
-set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG ${COMPILER_OPTIMIZATIONS}" CACHE STRING "compile flags for C++ language" FORCE)
+set(CMAKE_C_FLAGS_RELEASE "-DNDEBUG -g ${COMPILER_OPTIMIZATIONS}" CACHE STRING "compile flags for C language" FORCE)
+set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG -g ${COMPILER_OPTIMIZATIONS}" CACHE STRING "compile flags for C++ language" FORCE)
 set(CMAKE_ASM_FLAGS_RELEASE "" CACHE STRING "compile flags for ASM language" FORCE)
 
 set(CMAKE_C_FLAGS_DEBUG "-g" CACHE STRING "compile flags for C language" FORCE)

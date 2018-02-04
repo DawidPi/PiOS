@@ -3,7 +3,6 @@
 //
 
 #include <limits>
-#include <iostream>
 #include <cassert>
 #include <cstdlib>
 #include "ImageData.hpp"

@@ -7,11 +7,11 @@
 #include "VectorTableManagement.hpp"
 
 
-static constexpr uint32_t* VECTOR_TABLE_ADDRESS_SRC = reinterpret_cast<uint32_t*>(0x10000);
-static constexpr uint32_t* VECTOR_TABLE_ADDRESS = reinterpret_cast<uint32_t*>(0x0);
-static constexpr uint32_t* VECTOR_TABLE_ADDRESS_HIGH = reinterpret_cast<uint32_t*>(0xffff0000);
+static constexpr auto VECTOR_TABLE_ADDRESS_SRC = 0x10000;
+static constexpr auto VECTOR_TABLE_ADDRESS = 0x0;
+static constexpr auto VECTOR_TABLE_ADDRESS_HIGH = 0xffff0000;
 
 void VectorTable::setUp() {
-    std::memcpy(VECTOR_TABLE_ADDRESS, VECTOR_TABLE_ADDRESS_SRC, 0x40);
-    std::memcpy(VECTOR_TABLE_ADDRESS_HIGH, VECTOR_TABLE_ADDRESS_SRC, 0x40);
+    std::memcpy(reinterpret_cast<uint32_t*>(VECTOR_TABLE_ADDRESS), reinterpret_cast<uint32_t*>(VECTOR_TABLE_ADDRESS_SRC), 0x40);
+    std::memcpy(reinterpret_cast<uint32_t*>(VECTOR_TABLE_ADDRESS_HIGH), reinterpret_cast<uint32_t*>(VECTOR_TABLE_ADDRESS_SRC), 0x40);
 }

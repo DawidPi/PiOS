@@ -7,7 +7,6 @@ set(SOURCES
         ListEDFTest.cpp
         MSBLSBCalculatorTest.cpp
         BitSliceCalculatorTest.cpp
-        TLSFTest.cpp
         PowerTest.cpp
         ListTest.cpp)
 
