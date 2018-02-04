@@ -32,7 +32,7 @@ set(COMPILER_CPP_SUPPORT
 
 #for cortex-a7 (RaspberryPi2) note -mfloat-abi=hard can be used as well
 set(COMPILER_ARCH_FLAGS
-        "-marm -mfloat-abi=hard")
+        "-marm -mfloat-abi=soft")
 
 set(COMPILER_FLAGS_CPP
         "${COMPILER_NO_OS_FLAGS_NOSTDLIB} ${COMPILER_CPP_SUPPORT} ${COMPILER_ARCH_FLAGS} ${COMPILER_NO_RTTI_EXCEPTIONS_FLAGS} ${COMPILER_DEAD_CODE_REMOVAL_FLAGS}")

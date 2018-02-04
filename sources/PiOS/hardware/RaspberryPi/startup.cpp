@@ -1,6 +1,5 @@
 #include <Pi.hpp>
 #include <ListEDF.hpp>
-#include <TLSF.hpp>
 #include <Timer/Timer.hpp>
 #include <ContextAccess/BankedRegisters.hpp>
 #include <TLSFExternal.hpp>
@@ -49,7 +48,7 @@ namespace {
 
     void initOS() {
         uart::cout << "initOS()" << uart::endl;
-        PiOSHolder::choosePiImplementation(&piObject);
+        PiOS::PiOSHolder::choosePiImplementation(&piObject);
     }
 }
 
